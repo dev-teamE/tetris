@@ -67,6 +67,11 @@ const colors = [
     '#3877FF',
   ];
 
+/**
+ * @param {object} matrix - ピースの形状と配置を表す2次元配列
+ * @param {object} offset - ピースの描画位置を指定するオブジェクト. xとyのプロパティを持つ
+ */
+
 // ピースを描写する
 const drawMatrix = (matrix, offset) => {
     matrix.forEach((row, y) => {
