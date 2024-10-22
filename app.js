@@ -5,8 +5,11 @@ context.scale(20,20);
 const draw = () => {
     context.fillStyle = "#000";
     context.fillRect(0,0, canvas.width, canvas.height);
-}
 
+    // 変更した盤面を映す
+    drawMatrix(arena, {x: 0, y: 0})
+    drawMatrix(player.matrix, player.pos)
+}
 
 // ピースの構造を定義(数字は色のインデックス)
 const createPiece = (type) => {
@@ -79,4 +82,87 @@ const drawMatrix = (matrix, offset) => {
     });
 }
 
-drawMatrix(createPiece('T'), { x: 5, y: 5 });
+// ２次元配列でテトリスの場所を管理する(12*20)
+const arena = Array.from({ length: 20 }, () => Array(12).fill(0));
+
+const player = {
+  pos: {x: 0, y: 0},
+  // 一時的なものあとで動的なものに変更する
+  matrix: createPiece('T'),
+  score : 0,
+};
+
+function playerReset() {
+  player.matrix = randomMatrix;
+  player.pos.y = 0;
+  // 位置を真ん中にする
+  player.pos.x = (arena[0].length/2 | 0 ) - (player.matrix[0].length /2 | 0)
+}
+function collide(arena, player){
+  const [m, o] = [player.matrix, player.pos];
+  for (let y = 0; y < m.length; y++){
+    for (let x = 0; x < m[y].length; x++){
+      if (m[y][x] !== 0 && (arena[y + o.y] && arena[y + o.y][x + o.x]) !== 0 ){
+        if (y + o.y <= 0) return true
+      return true
+      }
+    }
+  }
+  return false
+}
+
+function playerMove(dir) {
+  
+  player.pos.x += dir;
+
+  if(collide(arena, player)){
+    player.pos.x -= dir
+  }
+}
+
+let lastTime = 0;
+// あとで難易度によって変更する必要がありそう
+let dropInterval = 1000;
+
+function update() {
+
+  let currentTime = performance.now()
+
+  if (currentTime - lastTime >= dropInterval) {
+    playerDrop();
+    lastTime = currentTime;
+  }
+
+  draw()
+  animationId = requestAnimationFrame(update)
+}
+
+function playerDrop(){
+  player.pos.y++ 
+  if(collide(arena, player)){
+    player.pos.y--;
+    cancelAnimationFrame(animationId)
+  }
+}
+
+
+document.addEventListener('keydown', (event) => { 
+  switch (event.key) {
+    case 'ArrowLeft':
+      playerMove(-1);
+      break;
+    case 'ArrowRight':
+      playerMove(1);
+      break;
+    case 'ArrowDown':
+      playerDrop();
+      break;
+    // ハードドロップと回転を入れる
+    // case 'ArrowUp':
+    //   movePiece();
+    //   break;
+  }
+});
+  
+
+update()
