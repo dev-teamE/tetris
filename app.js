@@ -604,7 +604,10 @@ function update() {
 
   let currentTime = performance.now()
 
-  playerDrop();
+  if (currentTime - lastTime >= dropInterval) {
+    playerDrop();
+    lastTime = currentTime;
+  }
 
   draw()
   animationId = requestAnimationFrame(update)
