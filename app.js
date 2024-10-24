@@ -2,6 +2,118 @@ const canvas = document.querySelector("#tetris");
 const context = canvas.getContext("2d");
 context.scale(20,20);
 
+// 以下hold機能に関する変数、関数
+let hold_canvas = document.getElementById('hold_canvas');
+let hold_context = hold_canvas.getContext('2d');
+let hold_block_size = 20;
+let has_hold = false; // ホールドしているかどうかの判定
+hold_context.scale(hold_block_size, hold_block_size);
+
+// ホールドフィールドサイズ
+let hold_field_col = 4;
+hold_canvas.width = hold_field_col * hold_block_size;
+let hold_field_row = 4;
+hold_canvas.height = hold_field_col * hold_block_size;
+let hold_field = [] // hold_fieldに表示するテトリミノ情報(２次元配列)
+function hold_init(){// hold_fieldの初期化する関数
+    for(let y=0; y<tetro_size; y++){
+        hold_field[y] = [];
+        for(let x=0; x<tetro_size; x++){
+            hold_field[y].push(0);
+        }
+    }
+}
+function draw_hold_field(){ // ホールドフィールドを描画する関数
+    for (let y=0; y<hold_field_row; y++){
+        for (let x=0; x<hold_field_col; x++){
+            if(hold_field[y][x]){
+                draw_hold_block(x, y);
+            }
+        }
+    }
+}
+
+//以下板垣追記
+//現在表示しているテトロミノの２次元配列を受け取り、ホールドフィールドの情報を更新する関数
+function update_hold_field(tetromino){ // ホールドフィールドに新しい２次元配列を格納する関数
+  has_hold = true;
+  tetro_size = tetromino.length;
+  hold_init();
+  for (let y=0; y<tetro_size; y++){
+    hold_field[y] = [];
+    for (let x=0; x<tetro_size; x++){
+        if(tetromino[y][x]){
+            hold_field[y][x] = tetromino[y][x];
+        }
+    }
+  }
+}
+// ホールドしているテトロミノを表示する関数
+// function get_hold(){
+//   has_hold = false;
+//   player.matrix = 
+// }
+function draw_hold_block(x, y){ //ホールドフィールドに1ブロックを描画する関数
+    let print_x = x * hold_block_size; // 描画するブロックのx座標
+    let print_y = y * hold_block_size; // 描画するブロックのy座標
+
+    hold_context.fillStyle = "#FF8E0D" //描画する色
+    hold_context.fillRect(print_x, print_y, hold_block_size, hold_block_size);
+    hold_context.strokeStyle = 'black';
+    hold_context.strokeRect(print_x, print_y, hold_block_size, hold_block_size);
+}
+// テトリミノの回転時の他ブロックとの衝突判定を行う関数
+// true か　false を返す
+// 以下引数について
+// current_x: 現在の描画位置のx座標
+// current_y: 現在の描画位置のy座標
+// roteted_tetro: 回転後のテトリミノ描画(2次元配列)
+function collision_on_rotate(current_x, current_y,rotated_tetro){
+  field_row = arena.length; // プレイフィールドの行数
+  field_col = arena[0].length; // プレイフィールドの列数
+  current_tetro_size = rotated_tetro.length; // テトロミノの描画サイズ
+  for (let y=0; y<current_tetro_size; y++){
+      for (let x=0; x<current_tetro_size; x++){
+          if(rotated_tetro[y][x] !=0 ){
+              // 回転後のテトリミノの現在地から描画位置
+              let rotated_x = player.pos.x + x;
+              let rotated_y = player.pos.y + y;
+
+              // 回転後のテトリミノが一つでも描画できない位置にある場合falseを返す
+              if( rotated_y < 0 || // 描画位置がフィールドの範囲外になる場合
+                  rotated_x < 0 || // 描画位置がフィールドの範囲外になる場合
+                  rotated_y >= field_row || // 描画位置がフィールドの範囲外になる場合
+                  rotated_x >= field_col || // 描画位置がフィールドの範囲外になる場合
+                  arena[rotated_y][rotated_x] != 0){ // 描画位置にすでにテトリミノが存在する場合
+                  return false;
+              }
+          }
+      }
+  }
+  // 回転後のテトリミノの全てが描画できる場合trueを返す
+  return true;
+}
+
+//　現在のテトロミノの配列を90度時計回りに回転させた配列を返す関数
+// 以下引数について
+// current_tetro: 現在のテトロミノの２次元配列
+function rotate(current_tetro){
+  let new_tetro = [];     // 回転後の情報を格納する配列new_tetroを作成
+  let current_tetro_size = current_tetro.length; // 現在のテトリミノの配列のサイズを取得する
+  for (let y=0; y<current_tetro_size; y++){
+      // ２次元配列にしたいので行ごとに配列を作成
+      new_tetro[y] = [];
+      for (let x=0; x<current_tetro_size; x++){
+          // 時計回りに90度回転させる場合の転記
+          new_tetro[y][x] = current_tetro[current_tetro_size-x-1][y];
+      }
+  }
+  return new_tetro;
+}
+
+// 上まで板垣追記
+
+
 const draw = () => {
     context.fillStyle = "#000";
     context.fillRect(0,0, canvas.width, canvas.height);
@@ -272,6 +384,20 @@ document.addEventListener('keydown', (event) => {
     case 'ArrowUp':
       playerHardDrop();
       break;
+    // 板垣追記
+    case ' ': // スペースを押した時の処理
+      new_tetro = rotate(player.matrix)// 回転後のテトリミノの描画情報new_tetro
+      // 回転後のテトリミノの描画位置が他のミノの衝突しない場合のみ、現在のテトロミノの描画を変更する
+      if(collision_on_rotate(player.pos.x, player.pos.y, new_tetro)){
+        player.matrix = new_tetro;
+      }
+      break;
+    case 'Shift': // Shiftを押した時の処理
+      if(hold_field)
+        update_hold_field(player.matrix);
+        draw_hold_field();
+        // 新しいミノを表示する処理を追記する
+        break;
   }
 });
 
