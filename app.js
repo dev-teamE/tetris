@@ -97,7 +97,7 @@ const player = {
 };
 
 function playerReset() {
-  player.matrix = createPiece(getNextTetromino(getNextTetromino()));
+  player.matrix = createPiece(getNextTetromino());
   player.pos.y = 0;
   // 位置を真ん中にする
   player.pos.x = (arena[0].length/2 | 0 ) - (player.matrix[0].length /2 | 0)
