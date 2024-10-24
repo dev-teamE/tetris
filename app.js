@@ -87,17 +87,102 @@ const arena = Array.from({ length: 20 }, () => Array(12).fill(0));
 
 const player = {
   pos: {x: 0, y: 0},
-  // 一時的なものあとで動的なものに変更する
-  matrix: createPiece('T'),
+  matrix: null,
   score : 0,
 };
 
 function playerReset() {
-  player.matrix = randomMatrix;
+  player.matrix = createPiece(getNextTetromino(getNextTetromino()));
   player.pos.y = 0;
   // 位置を真ん中にする
   player.pos.x = (arena[0].length/2 | 0 ) - (player.matrix[0].length /2 | 0)
+  // // ゲームオーバー
+  // if (collide(arena, player))
 }
+
+/*
+1. NEXTミノ
+———————————–*/
+
+// シャッフル関数（Fisher-Yatesアルゴリズム）でセブンバッグを作り、バッグが空になるまでランダムに取り出す
+
+// テトロミノのリスト。7種類のテトロミノ（テトリスのピース）を配列で定義
+const tetrominoes = ['T', 'O', 'L', 'J', 'I', 'S', 'Z'];
+
+// 次に出現するピースを保持するための配列
+let nextPieces = [];
+
+// Fisher-Yatesアルゴリズムを使用した配列のシャッフル関数
+function shuffle(array) {
+    // 配列の末尾から順に処理を行う
+    for (let i = array.length - 1; i > 0; i--) {
+        // ランダムな位置jを選ぶ（i＋1未満のランダムな少数を作り、少数以下を切り捨てる）
+        const j = Math.floor(Math.random() * (i + 1));
+        // 現在の位置iの要素と交換する（分割代入を使う）
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+// セブンバッグを生成する関数
+function generateSevenBag() {
+    // 7つのテトロミノをコピーしてシャッフルする関数
+  return shuffle([...tetrominoes]);
+}
+
+// 次のテトロミノを取得する関数（ゲーム開始時とミノがロックされた時に呼び出す）
+function getNextTetromino() {
+    // Player＋Next＋後続5つ、計7つ常に表示されている（ゲームスタート時、これで7-bagを使い切っている）
+    // ミノがロックされnextPiecesの先頭がPlayerに渡されたら、新たに表示される後続5つ目用に新たに7-bagを作る必要がある
+
+    // 残りのピースが7個以下になったら、新しい7-bagを生成して追加
+    if (nextPieces.length <= 7) {
+        // concatメソッドで、2つの配列を結合して新しい配列を作る（nextPiecesを上書き）
+        nextPieces = nextPieces.concat(generateSevenBag());
+    }
+
+    // shiftメソッドで、配列の先頭からピースを1つ取り出して返す
+    return nextPieces.shift();
+}
+
+// // ゲーム開始時に次のピースを生成
+// nextPieces = generateSevenBag(); 
+
+// 流れ
+// nextPieces -> getNextTetromino{nextPieces.shiftをreturn} -> createPiece(getNextTetromino()) -> player.matrix
+
+// 次に来るピースを描画する関数
+function drawNextPieces() {
+    // キャンバスの取得
+    const nextCanvas = document.getElementById('nextPieces');
+    const ctx = nextCanvas.getContext('2d');
+    
+    // キャンバスを黒色でクリア
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
+    
+    // 次に来るピースを描画（大きく表示）
+    const nextPiece = createPiece(nextPieces[0]); // 配列の最初のピースを取得
+    drawPiece(ctx, nextPiece, 20, 8, 20); // x=20, y=8の位置に、サイズ20で描画
+    
+    // 次に来るピースを四角で囲む
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(5, 5, 90, 90);
+    
+    // 残りのピースをまとめて描画（小さく表示）
+    const remainingPieces = nextPieces.slice(1, 6); // 2番目から6番目までのピースを取得
+    const startY = 120; // 残りのピース表示開始のY座標
+    ctx.strokeRect(5, startY - 5, 90, 285);  // 残りのピースを囲む四角
+    
+    // 残りの各ピースを順番に描画
+    remainingPieces.forEach((pieceType, index) => {
+        const piece = createPiece(pieceType);
+        // x=30, y=startY + index * 55の位置に、サイズ12で描画
+        drawPiece(ctx, piece, 30, startY + index * 55, 12);
+    });
+}
+
 function collide(arena, player){
   const [m, o] = [player.matrix, player.pos];
   for (let y = 0; y < m.length; y++){
@@ -120,6 +205,17 @@ function playerMove(dir) {
   }
 }
 
+function merge(arena, player) {
+  player.matrix.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value !== 0){
+        arena[y + player.pos.y][x + player.pos.x] = value;
+      }
+    })
+  })
+}
+
+
 let lastTime = 0;
 // あとで難易度によって変更する必要がありそう
 let dropInterval = 1000;
@@ -138,12 +234,22 @@ function update() {
 }
 
 function playerDrop(){
+
   player.pos.y++ 
+
   if(collide(arena, player)){
     player.pos.y--;
-    cancelAnimationFrame(animationId)
+    merge(arena, player)
+    playerReset()
+    arenaSweep()
   }
 }
+
+// function playerHardDrop() {
+//   while(!collide(arena,player)){
+//     player.pos.y ++ 
+//   }
+// }
 
 
 document.addEventListener('keydown', (event) => { 
@@ -157,12 +263,61 @@ document.addEventListener('keydown', (event) => {
     case 'ArrowDown':
       playerDrop();
       break;
-    // ハードドロップと回転を入れる
-    // case 'ArrowUp':
-    //   movePiece();
-    //   break;
+    ハードドロップと回転を入れる
+    case 'ArrowUp':
+      playerHardDrop();
+      break;
   }
 });
-  
 
+/*
+2. ライン消去とスコアシステム
+———————————–*/
+
+// フィールド内の完成した行を削除し、スコアを更新する関数
+function arenaSweep() {
+  // 消した行数をカウントする変数
+  let linesCleared = 0;
+
+  // 外側のループ（y軸方向）の設定：配列の一番下から上まで、1行ずつ確認
+  outer: for (let y = arena.length - 1; y >= 0; --y) { // 内側のループを効率的に抜け出すため、ラベル付きループを使用
+      // 内側のループ（x軸方向）の設定：0から最後のインデックスまで
+      for (let x = 0; x < arena[y].length; ++x) {
+          // マスの確認とスキップ処理
+          if (arena[y][x] === 0) {
+              continue outer; // 空白(0)があれば、その行をスキップして次の行へ
+          }
+      }
+
+      // 行の削除と新しい行の追加
+      // splice(開始位置, 削除する要素数)で行を削除、[index]で取り出し、fill(value)で埋める
+      const row = arena.splice(y, 1)[0].fill(0); 
+      arena.unshift(row); // 0で埋めた行rowを、unshiftで一番上（配列の先頭）に追加
+      ++y; // 行を削除したことで落ちてきた分の行もチェックするため
+      ++linesCleared; // スコア計算に使用するため、消した行数をカウントする
+  }
+  
+  // 消した行数に応じてスコアを加算
+  if (linesCleared > 0) {
+      const scores = [0, 100, 300, 500, 800];
+      // linesClearedはインデックスとして機能
+      player.score += scores[linesCleared];
+  }
+}
+
+// スコアを更新する関数
+function updateScore() {
+  // スコアをHTMLドキュメントの#score要素に反映
+  /// querySelector('#score')でHTML内のid="score"の要素を取得
+  /// innerTextでその要素のテキストを更新
+  /// player.scoreの値を画面に反映させる
+  document.querySelector('#score').innerText = player.score;
+}
+
+// arenaSweep()とupdateScore()は、ピースをロックする関数に組み込む
+// 未実装：コンボ、ハードドロップによるボーナス
+
+// ゲーム開始時に次のピースを生成
+nextPieces = generateSevenBag(); 
+playerReset()
 update()
