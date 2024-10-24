@@ -37,7 +37,7 @@ body {
 #game-container {
     display: flex; /* デフォルトの値はrow　横並びに */
     justify-content: center; /* メインエリアとネクストピースを横中央揃え */
-    align-items: flex-start; /* 上端揃えにする */   
+    align-items: start; /* 上端揃えにする */   
 }
 
 #main-area {
