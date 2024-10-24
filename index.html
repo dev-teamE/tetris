@@ -1,16 +1,33 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tetris Lv1</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-    <div id="scoreBoard">Score: <span id="score">0</span></div>
-    <canvas id="tetris" width="240" height="400"></canvas>
-    <canvas id="hold_canvas"></canvas>
-    <button id="restartButton">Restart</button>
+    <div id="game-container">
+        <dib id="hold-area">
+            <canvas id="hold_canvas" width="100" height="100"></canvas>
+        </div>
+        <div id="main-area">
+            <div id="scoreBoard">Score: <span id="score">0</span></div>
+            <canvas id="tetris" width="200" height="400"></canvas>
+            <button id="restartButton">Restart</button>
+            <button id="startButton">start</button>
+        </div>
+        <div id="next-area">
+            <h3>Next</h3>
+            <div id="nextPieces">
+                <canvas id="nextPiece" width="100" height="100"></canvas>
+                <canvas id="followingPieces" width="100" height="280"></canvas>
+            </div>
+        </div>
+    </div>
     <script src="app.js"></script>
 </body>
+
 </html>

@@ -48,6 +48,7 @@ function update_hold_field(tetromino){ // ホールドフィールドに新し�
     }
   }
 }
+
 // ホールドしているテトロミノを表示する関数
 // function get_hold(){
 //   has_hold = false;
@@ -62,6 +63,7 @@ function draw_hold_block(x, y){ //ホールドフィールドに1ブロックを
     hold_context.strokeStyle = 'black';
     hold_context.strokeRect(print_x, print_y, hold_block_size, hold_block_size);
 }
+
 // テトリミノの回転時の他ブロックとの衝突判定を行う関数
 // true か　false を返す
 // 以下引数について
@@ -113,7 +115,6 @@ function rotate(current_tetro){
 
 // 上まで板垣追記
 
-
 const draw = () => {
     context.fillStyle = "#000";
     context.fillRect(0,0, canvas.width, canvas.height);
@@ -131,7 +132,7 @@ const createPiece = (type) => {
           [1, 1, 1],
           [0, 1, 0],      
         ];
-    } else if (type === "0") {
+    } else if (type === "O") {
         return [
           [2, 2],
           [2, 2],
@@ -189,18 +190,26 @@ const colors = [
 
 // ピースを描写する
 const drawMatrix = (matrix, offset) => {
-    matrix.forEach((row, y) => {
-        row.forEach((value, x) => {
-            if (value !== 0){
-                context.fillStyle = colors[value];
-                context.fillRect(x+offset.x, y+offset.y, 1, 1);
-            }
-        });
+
+  // 線の幅を設定（スケールの逆数）
+  context.lineWidth = 1 / 20;
+
+  matrix.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value !== 0){
+        context.fillStyle = colors[value];
+        context.fillRect(x+offset.x, y+offset.y, 1, 1);
+
+        // 線を描画
+        context.strokeStyle = 'rgba(255, 255, 255, 1)';
+        context.strokeRect(x + offset.x, y + offset.y, 1, 1);
+      }
     });
+  });
 }
 
 // ２次元配列でテトリスの場所を管理する(12*20)
-const arena = Array.from({ length: 20 }, () => Array(12).fill(0));
+const arena = Array.from({ length: 20 }, () => Array(10).fill(0));
 
 const player = {
   pos: {x: 0, y: 0},
@@ -213,8 +222,17 @@ function playerReset() {
   player.pos.y = 0;
   // 位置を真ん中にする
   player.pos.x = (arena[0].length/2 | 0 ) - (player.matrix[0].length /2 | 0)
+  
+  drawNextPieces();
+
   // // ゲームオーバー
-  // if (collide(arena, player))
+  // 配置直後に衝突判定
+  if (collide(arena, player)) {
+      gameOver();
+      return false; // ゲームオーバーを示すfalseを返す
+  }
+  
+  return true; // 正常にリセットされたことを示すtrueを返す
 }
 
 /*
@@ -268,36 +286,63 @@ function getNextTetromino() {
 // 流れ
 // nextPieces -> getNextTetromino{nextPieces.shiftをreturn} -> createPiece(getNextTetromino()) -> player.matrix
 
+
+/*
+NEXT表示システム
+———————————–*/
+
+
 // 次に来るピースを描画する関数
 function drawNextPieces() {
-    // キャンバスの取得
-    const nextCanvas = document.getElementById('nextPieces');
-    const ctx = nextCanvas.getContext('2d');
-    
-    // キャンバスを黒色でクリア
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
-    
-    // 次に来るピースを描画（大きく表示）
-    const nextPiece = createPiece(nextPieces[0]); // 配列の最初のピースを取得
-    drawPiece(ctx, nextPiece, 20, 8, 20); // x=20, y=8の位置に、サイズ20で描画
-    
-    // 次に来るピースを四角で囲む
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(5, 5, 90, 90);
-    
-    // 残りのピースをまとめて描画（小さく表示）
-    const remainingPieces = nextPieces.slice(1, 6); // 2番目から6番目までのピースを取得
-    const startY = 120; // 残りのピース表示開始のY座標
-    ctx.strokeRect(5, startY - 5, 90, 285);  // 残りのピースを囲む四角
-    
-    // 残りの各ピースを順番に描画
-    remainingPieces.forEach((pieceType, index) => {
-        const piece = createPiece(pieceType);
-        // x=30, y=startY + index * 55の位置に、サイズ12で描画
-        drawPiece(ctx, piece, 30, startY + index * 55, 12);
+  // キャンバスの取得
+  const nextCanvas = document.getElementById('nextPiece');
+  const ctx = nextCanvas.getContext('2d');
+  const followingCanvas = document.getElementById('followingPieces');
+  const flwCtx = followingCanvas.getContext('2d');
+  
+  // キャンバスを黒色でクリア
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
+
+  // キャンバスを黒色でクリア
+  flwCtx.fillStyle = '#000';
+  flwCtx.fillRect(0, 0, followingCanvas.width, followingCanvas.height);
+  
+  // 次に来るピースを描画（大きく表示）
+  const nextPiece = createPiece(nextPieces[0]); // 配列の最初のピースを取得
+  drawPiece(ctx, nextPiece, 20, 8, 20); // x=20, y=8の位置に、サイズ20で描画
+  
+  // 残りのピースをまとめて描画（小さく表示）
+  const remainingPieces = nextPieces.slice(1, 6); // 2番目から6番目までのピースを取得
+  const startY = 5; // 残りのピース表示開始のY座標
+  
+  // 残りの各ピースを順番に描画
+  remainingPieces.forEach((pieceType, index) => {
+      const piece = createPiece(pieceType);
+      // x=30, y=startY + index * 55の位置に、サイズ12で描画
+      drawPiece(flwCtx, piece, 32, startY + index * 55, 12);
+  });
+}
+
+// 次に来るピース群を描画するヘルパー関数
+// パラメータの説明
+// ctx: 描画コンテキスト
+// piece: ピースの形状を表す2次元配列
+// startX: 描画開始X座標
+// startY: 描画開始Y座標
+// blockSize: 1ブロックのサイズ（ピクセル）
+
+function drawPiece(ctx, piece, startX, startY, blockSize) {
+  piece.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value !== 0) {
+        ctx.fillStyle = colors[value];
+        ctx.fillRect(startX + x * blockSize, startY + y * blockSize, blockSize, blockSize);
+        ctx.strokeStyle = '#000';
+        ctx.strokeRect(startX + x * blockSize, startY + y * blockSize, blockSize, blockSize);
+      }
     });
+  });
 }
 
 function collide(arena, player){
@@ -332,23 +377,14 @@ function merge(arena, player) {
   })
 }
 
-
+let dropCounter = 0;
 let lastTime = 0;
 // あとで難易度によって変更する必要がありそう
 let dropInterval = 1000;
 
-function update() {
+// ゲームを停止するために使うアニメーションフレームID
+let animationId;
 
-  let currentTime = performance.now()
-
-  if (currentTime - lastTime >= dropInterval) {
-    playerDrop();
-    lastTime = currentTime;
-  }
-
-  draw()
-  animationId = requestAnimationFrame(update)
-}
 
 function playerDrop(){
 
@@ -357,9 +393,15 @@ function playerDrop(){
   if(collide(arena, player)){
     player.pos.y--;
     merge(arena, player)
-    playerReset()
+    if (!playerReset()) {
+      // playerResetがfalseを返した場合（ゲームオーバー時）、ここで処理を終了
+      return;
+    }
     arenaSweep()
+    updateScore()
   }
+
+  dropCounter = 0;
 }
 
 // function playerHardDrop() {
@@ -380,9 +422,9 @@ document.addEventListener('keydown', (event) => {
     case 'ArrowDown':
       playerDrop();
       break;
-    ハードドロップと回転を入れる
+    // ハードドロップと回転を入れる
     case 'ArrowUp':
-      playerHardDrop();
+      //playerHardDrop();
       break;
     // 板垣追記
     case ' ': // スペースを押した時の処理
@@ -400,6 +442,7 @@ document.addEventListener('keydown', (event) => {
         break;
   }
 });
+
 
 /*
 2. ライン消去とスコアシステム
@@ -448,7 +491,132 @@ function updateScore() {
 // arenaSweep()とupdateScore()は、ピースをロックする関数に組み込む
 // 未実装：コンボ、ハードドロップによるボーナス
 
+/*
 // ゲーム開始時に次のピースを生成
 nextPieces = generateSevenBag(); 
 playerReset()
 update()
+*/
+
+
+/*
+3. Game Over
+———————————–*/
+
+// ゲーム状態の管理
+let gameActive = true;    // ゲームの状態を管理するためのグローバル変数
+
+// ゲームオーバー時の処理、アニメーションを停止し、リスタートボタンを表示
+function gameOver() {
+  gameActive = false; // ゲームの状態を非アクティブに設定
+  cancelAnimationFrame(animationId); // ゲームループを停止
+  document.getElementById('restartButton').style.display = 'block'; // リスタートボタンを表示
+  drawGameOver(document.querySelector('#tetris')); // ゲームオーバー表示を描画
+}
+
+function gameStart() {
+  document.getElementById('startButton').style.display = 'block'; // スタートボタンを表示
+  drawGameStart(document.querySelector('#tetris')); // ゲームオーバー表示を描画
+}
+
+// ミノがロックされ、新しいミノが表示された時点で呼び出して判定する。
+
+
+// ゲームオーバー画面の描画
+// canvasが二つに増えたため、グローバルのcanvas（Tetris）を指定。（将来的にはクラスで分けたい）
+function drawGameOver(canvas) {
+  const context = canvas.getContext('2d');
+  context.save();  // 現在の描画状態を保存
+
+  // スケーリングをリセット
+  context.setTransform(1, 0, 0, 1, 0, 0);
+
+  // 半透明の黒背景
+  context.fillStyle = 'rgba(0, 0, 0, 0.75)';
+  context.fillRect(0, 0, canvas.width, canvas.height);
+
+  // "GAME OVER" テキスト
+  context.fillStyle = '#FF0000';
+  context.font = 'bold 36px Arial'; // フォントを太字に、サイズを大きく
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.fillText('GAME OVER', canvas.width / 2, canvas.height / 2);
+
+  // スコア表示
+  context.fillStyle = '#FFFFFF';
+  context.font = '24px Arial';
+  context.fillText(`Score: ${player.score}`, canvas.width / 2, canvas.height / 2 + 40);
+
+  context.restore();  // 描画状態を元に戻す
+}
+
+
+// ゲームスタート画面の描画
+// canvasが二つに増えたため、グローバルのcanvas（Tetris）を指定。（将来的にはクラスで分けたい）
+function drawGameStart(canvas) {
+  const context = canvas.getContext('2d');
+  context.save();  // 現在の描画状態を保存
+
+  // スケーリングをリセット
+  context.setTransform(1, 0, 0, 1, 0, 0);
+
+  // 半透明の黒背景
+  context.fillStyle = 'rgba(0, 0, 0, 0.75)';
+  context.fillRect(0, 0, canvas.width, canvas.height);
+
+  // "GAME OVER" テキスト
+  context.fillStyle = '#00FF00';
+  context.font = 'bold 36px Arial'; // フォントを太字に、サイズを大きく
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.fillText('TETRIS', canvas.width / 2, canvas.height / 2);
+
+  // スコア表示
+  context.fillStyle = '#FFFFFF';
+  context.font = '18px Arial';
+  context.fillText(`Highscore: ${player.score}`, canvas.width / 2, canvas.height / 2 + 40);
+
+  context.restore();  // 描画状態を元に戻す
+}
+
+function restartGame() {
+  // ゲームの状態をアクティブに設定
+  gameActive = true;
+  // フィールドを全てゼロでリセット
+  arena.forEach(row => row.fill(0));
+  // プレイヤーのスコアをリセット
+  player.score = 0;
+  // スコア表示を更新
+  updateScore();
+  // プレイヤーのピースをリセット
+  playerReset();
+  // アニメーションのタイマーをリセット
+  lastTime = 0;
+  // ゲームを再開
+  update();
+  // リスタートボタンを非表示にする
+  document.getElementById('restartButton').style.display = 'none';
+  document.getElementById('startButton').style.display = 'none';
+}
+
+function update() {
+  if (!gameActive) return; // ゲームが非アクティブな場合は更新を行わない
+
+  let currentTime = performance.now()
+
+  if (currentTime - lastTime >= dropInterval) {
+    playerDrop();
+    lastTime = currentTime;
+  }
+
+  draw()
+  animationId = requestAnimationFrame(update)
+}
+
+//drawMatrix(createPiece(getNextTetromino()), { x: 5, y: 5 });
+
+gameStart()
+
+// リスタートボタンがクリックされたときにrestartGame関数を実行
+document.getElementById('restartButton').addEventListener('click', restartGame);
+document.getElementById('startButton').addEventListener('click', restartGame);
