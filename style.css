@@ -1,6 +1,6 @@
 body {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     justify-content: center;
     align-items: center;
     margin: 0;
@@ -8,7 +8,7 @@ body {
     background-color: #000;
 }
 
-canvas {
+#tetris {
     border: 1px solid #fff;
 }
 
@@ -19,8 +19,69 @@ canvas {
 }
 
 #restartButton {
-    display: block;
+    /* display: block; */
+    display: none; /* ゲーム起動時は非表示 */
     margin-top: 20px;
     padding: 10px 20px;
     font-size: 20px;
+}
+
+#startButton {
+    /* display: block; */
+    display: none; /* ゲーム起動時は非表示 */
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 20px;
+}
+
+#game-container {
+    display: flex; /* デフォルトの値はrow　横並びに */
+    justify-content: center; /* メインエリアとネクストピースを横中央揃え */
+    align-items: flex-start; /* 上端揃えにする */   
+}
+
+#main-area {
+    display: flex;
+    flex-direction: column; /* スコア、キャンバス、ボタンを縦並びに */
+    align-items: center; /* 子要素を中央揃え */
+}
+
+#hold-area {
+    display: flex;
+    flex-direction: column; /* 見出しとキャンバスを縦並びに */
+    align-items: center; /* 子要素を中央揃え */
+    justify-content: s;
+    margin-right: 20px; /* メインエリアとの間隔 */
+}
+
+#hold_canvas {
+    border: 1px solid #fff;
+}
+
+#next-area {
+    display: flex;
+    flex-direction: column; /* 見出しとキャンバスを縦並びに */
+    align-items: center; /* 子要素を中央揃え */
+    margin-left: 20px; /* メインエリアとの間隔 */
+}
+
+#next-area h3 {
+    color: #fff;
+    margin: 0; /* デフォルトマージンをリセット */
+    margin-top: 2px;
+    margin-bottom: 10px; /* キャンバスとの間隔 */
+}
+
+#nextPieces {
+    display: flex;
+    flex-direction: column; /* 見出しとキャンバスを縦並びに */
+}
+
+#nextPiece {
+    border: 1px solid #fff;
+    margin-bottom: 18px; /* キャンバスとの間隔 */
+}
+
+#followingPieces {
+    border: 1px solid #fff;
 }
