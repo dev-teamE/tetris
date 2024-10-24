@@ -209,7 +209,7 @@ const drawMatrix = (matrix, offset) => {
 }
 
 // ２次元配列でテトリスの場所を管理する(12*20)
-const arena = Array.from({ length: 20 }, () => Array(12).fill(0));
+const arena = Array.from({ length: 20 }, () => Array(10).fill(0));
 
 const player = {
   pos: {x: 0, y: 0},
