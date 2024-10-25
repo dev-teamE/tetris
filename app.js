@@ -122,15 +122,16 @@ const draw = () => {
     // 変更した盤面を映す
     drawMatrix(arena, {x: 0, y: 0})
     drawMatrix(player.matrix, player.pos)
+    drawGhostMatrix(ghost.matrix, ghost.pos)
 }
 
 // ピースの構造を定義(数字は色のインデックス)
 const createPiece = (type) => {
     if (type === 'T'){
         return [
-          [0, 0, 0],
           [1, 1, 1],
-          [0, 1, 0],      
+          [0, 1, 0],
+          [0, 0, 0],      
         ];
     } else if (type === "O") {
         return [
@@ -174,13 +175,13 @@ const createPiece = (type) => {
 // ピースの色を定義
 const colors = [
     null,
-    '#FF0D72',
-    '#0DC2FF',
-    '#0DFF72',
-    '#F538FF',
-    '#FF8E0D',
-    '#FFE138',
-    '#3877FF',
+    [255, 13, 114, 1] ,
+    [13, 194, 255, 1] ,
+    [13, 255, 114, 1] ,
+    [245, 56, 255, 1] ,
+    [255, 142, 13, 1] ,
+    [255, 225, 56, 1] ,
+    [56, 119, 255, 1] ,
   ];
 
 /**
@@ -197,7 +198,8 @@ const drawMatrix = (matrix, offset) => {
   matrix.forEach((row, y) => {
     row.forEach((value, x) => {
       if (value !== 0){
-        context.fillStyle = colors[value];
+        colors[value][3] = 1
+        context.fillStyle = "rgba(" + colors[value] + ")";
         context.fillRect(x+offset.x, y+offset.y, 1, 1);
 
         // 線を描画
@@ -208,7 +210,27 @@ const drawMatrix = (matrix, offset) => {
   });
 }
 
-// ２次元配列でテトリスの場所を管理する(12*20)
+const drawGhostMatrix = (matrix, offset) => {
+
+  // 線の幅を設定（スケールの逆数）
+  context.lineWidth = 1 / 20;
+
+  matrix.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value !== 0){
+        colors[value][3] = 0.3
+        context.fillStyle = "rgba(" + colors[value] + ")";
+        context.fillRect(x+offset.x, y+offset.y, 1, 1);
+
+        // 線を描画
+        context.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+        context.strokeRect(x + offset.x, y + offset.y, 1, 1);
+      }
+    });
+  });
+}
+
+// ２次元配列でテトリスの場所を管理する(10*20)
 const arena = Array.from({ length: 20 }, () => Array(10).fill(0));
 
 const player = {
@@ -217,21 +239,25 @@ const player = {
   score : 0,
 };
 
+const ghost = {
+  pos: {x:0, y:0},
+  matrix: null,
+}
+
 function playerReset() {
   player.matrix = createPiece(getNextTetromino());
   player.pos.y = 0;
-  // 位置を真ん中にする
-  player.pos.x = (arena[0].length/2 | 0 ) - (player.matrix[0].length /2 | 0)
-  
+  player.pos.x = (arena[0].length/2 | 0 ) - (player.matrix[0].length /2 | 0);
+
   drawNextPieces();
 
   // // ゲームオーバー
   // 配置直後に衝突判定
-  if (collide(arena, player)) {
-      gameOver();
-      return false; // ゲームオーバーを示すfalseを返す
+  if (collide(arena, player) ) {
+    gameOver();
+    return false; // ゲームオーバーを示すfalseを返す
   }
-  
+  ghostTetrimono();
   return true; // 正常にリセットされたことを示すtrueを返す
 }
 
@@ -280,8 +306,8 @@ function getNextTetromino() {
     return nextPieces.shift();
 }
 
-// // ゲーム開始時に次のピースを生成
-// nextPieces = generateSevenBag(); 
+// ゲーム開始時に次のピースを生成
+nextPieces = generateSevenBag(); 
 
 // 流れ
 // nextPieces -> getNextTetromino{nextPieces.shiftをreturn} -> createPiece(getNextTetromino()) -> player.matrix
@@ -336,7 +362,7 @@ function drawPiece(ctx, piece, startX, startY, blockSize) {
   piece.forEach((row, y) => {
     row.forEach((value, x) => {
       if (value !== 0) {
-        ctx.fillStyle = colors[value];
+        ctx.fillStyle = "rgba(" + colors[value] + ")";
         ctx.fillRect(startX + x * blockSize, startY + y * blockSize, blockSize, blockSize);
         ctx.strokeStyle = '#000';
         ctx.strokeRect(startX + x * blockSize, startY + y * blockSize, blockSize, blockSize);
@@ -350,7 +376,6 @@ function collide(arena, player){
   for (let y = 0; y < m.length; y++){
     for (let x = 0; x < m[y].length; x++){
       if (m[y][x] !== 0 && (arena[y + o.y] && arena[y + o.y][x + o.x]) !== 0 ){
-        if (y + o.y <= 0) return true
       return true
       }
     }
@@ -365,6 +390,7 @@ function playerMove(dir) {
   if(collide(arena, player)){
     player.pos.x -= dir
   }
+  ghostTetrimono()
 }
 
 function merge(arena, player) {
@@ -377,7 +403,6 @@ function merge(arena, player) {
   })
 }
 
-let dropCounter = 0;
 let lastTime = 0;
 // あとで難易度によって変更する必要がありそう
 let dropInterval = 1000;
@@ -392,6 +417,7 @@ function playerDrop(){
 
   if(collide(arena, player)){
     player.pos.y--;
+    ghostTetrimono()
     merge(arena, player)
     if (!playerReset()) {
       // playerResetがfalseを返した場合（ゲームオーバー時）、ここで処理を終了
@@ -400,18 +426,26 @@ function playerDrop(){
     arenaSweep()
     updateScore()
   }
-
-  dropCounter = 0;
 }
 
-// function playerHardDrop() {
-//   while(!collide(arena,player)){
-//     player.pos.y ++ 
-//   }
-// }
+function ghostTetrimono() {
+  ghost.matrix = player.matrix;
+  ghost.pos.x = player.pos.x;
+  while (!collide(arena, ghost)) ghost.pos.y++;
+  while (collide(arena,ghost)) ghost.pos.y--
+}
+
+function playerHardDrop() {
+  while (player.pos.y < ghost.pos.y) player.pos.y++
+  merge(arena,player)
+  playerReset()
+  arenaSweep()
+  updateScore()
+}
 
 
 document.addEventListener('keydown', (event) => { 
+  if (!gameActive) return;
   switch (event.key) {
     case 'ArrowLeft':
       playerMove(-1);
@@ -424,7 +458,7 @@ document.addEventListener('keydown', (event) => {
       break;
     // ハードドロップと回転を入れる
     case 'ArrowUp':
-      //playerHardDrop();
+      playerHardDrop();
       break;
     // 板垣追記
     case ' ': // スペースを押した時の処理
@@ -433,6 +467,7 @@ document.addEventListener('keydown', (event) => {
       if(collision_on_rotate(player.pos.x, player.pos.y, new_tetro)){
         player.matrix = new_tetro;
       }
+      ghostTetrimono()
       break;
     case 'Shift': // Shiftを押した時の処理
       if(hold_field)
@@ -511,12 +546,13 @@ function gameOver() {
   gameActive = false; // ゲームの状態を非アクティブに設定
   cancelAnimationFrame(animationId); // ゲームループを停止
   document.getElementById('restartButton').style.display = 'block'; // リスタートボタンを表示
-  drawGameOver(document.querySelector('#tetris')); // ゲームオーバー表示を描画
+  drawGameOver();  // ゲームオーバー表示を描画
 }
 
 function gameStart() {
   document.getElementById('startButton').style.display = 'block'; // スタートボタンを表示
-  drawGameStart(document.querySelector('#tetris')); // ゲームオーバー表示を描画
+  drawGameStart(); // ゲームオーバー表示を描画
+  context.restore()
 }
 
 // ミノがロックされ、新しいミノが表示された時点で呼び出して判定する。
@@ -524,11 +560,11 @@ function gameStart() {
 
 // ゲームオーバー画面の描画
 // canvasが二つに増えたため、グローバルのcanvas（Tetris）を指定。（将来的にはクラスで分けたい）
-function drawGameOver(canvas) {
-  const context = canvas.getContext('2d');
+function drawGameOver() {
+  // const context = canvas.getContext('2d');
   context.save();  // 現在の描画状態を保存
 
-  // スケーリングをリセット
+  // // スケーリングをリセット
   context.setTransform(1, 0, 0, 1, 0, 0);
 
   // 半透明の黒背景
@@ -547,17 +583,18 @@ function drawGameOver(canvas) {
   context.font = '24px Arial';
   context.fillText(`Score: ${player.score}`, canvas.width / 2, canvas.height / 2 + 40);
 
+
   context.restore();  // 描画状態を元に戻す
 }
 
 
 // ゲームスタート画面の描画
 // canvasが二つに増えたため、グローバルのcanvas（Tetris）を指定。（将来的にはクラスで分けたい）
-function drawGameStart(canvas) {
-  const context = canvas.getContext('2d');
+function drawGameStart() {
+  // const context = canvas.getContext('2d');
   context.save();  // 現在の描画状態を保存
 
-  // スケーリングをリセット
+  // // スケーリングをリセット
   context.setTransform(1, 0, 0, 1, 0, 0);
 
   // 半透明の黒背景
@@ -588,6 +625,8 @@ function restartGame() {
   player.score = 0;
   // スコア表示を更新
   updateScore();
+  // 
+  nextPieces = shuffle([...tetrominoes])
   // プレイヤーのピースをリセット
   playerReset();
   // アニメーションのタイマーをリセット
@@ -600,20 +639,18 @@ function restartGame() {
 }
 
 function update() {
-  if (!gameActive) return; // ゲームが非アクティブな場合は更新を行わない
+  if (gameActive) { // ゲームが非アクティブな場合は更新を行わない
 
-  let currentTime = performance.now()
+    currentTime = performance.now()
 
-  if (currentTime - lastTime >= dropInterval) {
-    playerDrop();
-    lastTime = currentTime;
+    if (currentTime - lastTime >= dropInterval) {
+      playerDrop();
+      lastTime = currentTime;
+    }
+    draw() 
   }
-
-  draw()
   animationId = requestAnimationFrame(update)
 }
-
-//drawMatrix(createPiece(getNextTetromino()), { x: 5, y: 5 });
 
 gameStart()
 
