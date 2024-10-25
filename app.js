@@ -6,8 +6,6 @@ context.scale(20,20);
 let hold_canvas = document.getElementById('hold_canvas');
 let hold_context = hold_canvas.getContext('2d');
 let hold_block_size = 20;
-let has_hold = false; // ホールドしているかどうかの判定
-hold_context.scale(hold_block_size, hold_block_size);
 
 // ホールドフィールドサイズ
 let hold_field_col = 4;
@@ -15,54 +13,58 @@ hold_canvas.width = hold_field_col * hold_block_size;
 let hold_field_row = 4;
 hold_canvas.height = hold_field_col * hold_block_size;
 let hold_field = [] // hold_fieldに表示するテトリミノ情報(２次元配列)
-function hold_init(){// hold_fieldの初期化する関数
-    for(let y=0; y<tetro_size; y++){
-        hold_field[y] = [];
-        for(let x=0; x<tetro_size; x++){
-            hold_field[y].push(0);
-        }
-    }
-}
-function draw_hold_field(){ // ホールドフィールドを描画する関数
-    for (let y=0; y<hold_field_row; y++){
-        for (let x=0; x<hold_field_col; x++){
-            if(hold_field[y][x]){
-                draw_hold_block(x, y);
-            }
-        }
-    }
-}
 
-//以下板垣追記
-//現在表示しているテトロミノの２次元配列を受け取り、ホールドフィールドの情報を更新する関数
-function update_hold_field(tetromino){ // ホールドフィールドに新しい２次元配列を格納する関数
-  has_hold = true;
-  tetro_size = tetromino.length;
-  hold_init();
-  for (let y=0; y<tetro_size; y++){
-    hold_field[y] = [];
-    for (let x=0; x<tetro_size; x++){
-        if(tetromino[y][x]){
-            hold_field[y][x] = tetromino[y][x];
-        }
+function draw_hold_field(tetro_type){ // ホールドフィールドを描画する関数
+  clear_hold_field();
+  let tetro = createPiece(tetro_type);
+  draw_hold_tetro(tetro); // ホールドしたテトロミノを描画する
+}
+function clear_hold_field(){// 現在ホールドフィールドに表示されているテトロミノを削除する
+  hold_context.fillStyle = "#000";
+  hold_context.fillRect(0,0, hold_canvas.width, hold_canvas.height);
+}
+function draw_hold_tetro(matrix){
+  // 線の幅を設定（スケールの逆数）
+  let tetro_size = matrix.length;
+  for(let y=0; y<tetro_size; y++){
+    for(let x=0; x<tetro_size; x++){
+      if(matrix[y][x] !== 0){
+        hold_context.fillStyle = colors[matrix[y][x]];
+        hold_context.fillRect(x * hold_block_size, y * hold_block_size, hold_block_size, hold_block_size);
+        hold_context.strokeStyle = '#000';
+        hold_context.strokeRect(x * hold_block_size, y * hold_block_size, hold_block_size, hold_block_size);
+      }
     }
   }
 }
+function player_reset_after_hold() {
+  if(player.hold_tetro_type != null){// 2回目以降のホールド時の処理
+    player.hold_used = true;
+    let temp = player.current_tetro_type;
+    player.current_tetro_type = player.hold_tetro_type;
+    player.hold_tetro_type = temp;
+    player.matrix = createPiece(player.current_tetro_type);
+    player.pos.y = 0;
+    // 位置を真ん中にする
+    player.pos.x = (arena[0].length/2 | 0 ) - (player.matrix[0].length /2 | 0)
+    draw_hold_field(player.hold_tetro_type);
+    drawNextPieces();
+    // // ゲームオーバー
+    // 配置直後に衝突判定
+    if (collide(arena, player)) {
+        gameOver();
+        return false; // ゲームオーバーを示すfalseを返す
+    }
+    return true; // 正常にリセットされたことを示すtrueを返す
+  }else{// １回目のホールド時の処理
+    player.hold_used = true;
+    player.hold_tetro_type = player.current_tetro_type;
+    playerReset();
+    draw_hold_field(player.hold_tetro_type);
+  }
+  }
 
-// ホールドしているテトロミノを表示する関数
-// function get_hold(){
-//   has_hold = false;
-//   player.matrix = 
-// }
-function draw_hold_block(x, y){ //ホールドフィールドに1ブロックを描画する関数
-    let print_x = x * hold_block_size; // 描画するブロックのx座標
-    let print_y = y * hold_block_size; // 描画するブロックのy座標
 
-    hold_context.fillStyle = "#FF8E0D" //描画する色
-    hold_context.fillRect(print_x, print_y, hold_block_size, hold_block_size);
-    hold_context.strokeStyle = 'black';
-    hold_context.strokeRect(print_x, print_y, hold_block_size, hold_block_size);
-}
 
 // テトリミノの回転時の他ブロックとの衝突判定を行う関数
 // true か　false を返す
@@ -213,12 +215,16 @@ const arena = Array.from({ length: 20 }, () => Array(10).fill(0));
 
 const player = {
   pos: {x: 0, y: 0},
+  current_tetro_type: null, // プレイヤー情報として現在のテトロミノの形の情報を持つように修正
+  hold_tetro_type: null,
+  hold_used: false, // １回の落下中にホールド機能を利用したかどうかの状態
   matrix: null,
   score : 0,
 };
 
 function playerReset() {
-  player.matrix = createPiece(getNextTetromino());
+  player.current_tetro_type = getNextTetromino(); // 板垣修正
+  player.matrix = createPiece(player.current_tetro_type);// 板垣修正
   player.pos.y = 0;
   // 位置を真ん中にする
   player.pos.x = (arena[0].length/2 | 0 ) - (player.matrix[0].length /2 | 0)
@@ -399,6 +405,7 @@ function playerDrop(){
     }
     arenaSweep()
     updateScore()
+    player.hold_used = false;
   }
 
   dropCounter = 0;
@@ -412,6 +419,7 @@ function playerDrop(){
 
 
 document.addEventListener('keydown', (event) => { 
+  if (!gameActive) return;
   switch (event.key) {
     case 'ArrowLeft':
       playerMove(-1);
@@ -435,11 +443,10 @@ document.addEventListener('keydown', (event) => {
       }
       break;
     case 'Shift': // Shiftを押した時の処理
-      if(hold_field)
-        update_hold_field(player.matrix);
-        draw_hold_field();
-        // 新しいミノを表示する処理を追記する
-        break;
+      if(!player.hold_used){
+        player_reset_after_hold();
+      }
+      break;
   }
 });
 
@@ -586,6 +593,9 @@ function restartGame() {
   arena.forEach(row => row.fill(0));
   // プレイヤーのスコアをリセット
   player.score = 0;
+  // ホールドしているテトロミノをリセット
+  player.hold_tetro_type = null;
+  clear_hold_field();
   // スコア表示を更新
   updateScore();
   // プレイヤーのピースをリセット
