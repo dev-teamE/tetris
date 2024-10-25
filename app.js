@@ -8,33 +8,118 @@ let hold_context = hold_canvas.getContext('2d');
 let hold_block_size = 20;
 
 // ホールドフィールドサイズ
-let hold_field_col = 4;
+let hold_field_col = 5;
 hold_canvas.width = hold_field_col * hold_block_size;
-let hold_field_row = 4;
+let hold_field_row = 5;
 hold_canvas.height = hold_field_col * hold_block_size;
 let hold_field = [] // hold_fieldに表示するテトリミノ情報(２次元配列)
 
 function draw_hold_field(tetro_type){ // ホールドフィールドを描画する関数
   clear_hold_field();
-  let tetro = createPiece(tetro_type);
-  draw_hold_tetro(tetro); // ホールドしたテトロミノを描画する
+  draw_hold_tetro(tetro_type); // ホールドしたテトロミノを描画する
 }
 function clear_hold_field(){// 現在ホールドフィールドに表示されているテトロミノを削除する
-  hold_context.fillStyle = "#000";
+  hold_context.fillStyle = "#000080";
   hold_context.fillRect(0,0, hold_canvas.width, hold_canvas.height);
 }
-function draw_hold_tetro(matrix){
-  // 線の幅を設定（スケールの逆数）
-  let tetro_size = matrix.length;
-  for(let y=0; y<tetro_size; y++){
-    for(let x=0; x<tetro_size; x++){
-      if(matrix[y][x] !== 0){
-        hold_context.fillStyle = colors[matrix[y][x]];
-        hold_context.fillRect(x * hold_block_size, y * hold_block_size, hold_block_size, hold_block_size);
-        hold_context.strokeStyle = '#000';
-        hold_context.strokeRect(x * hold_block_size, y * hold_block_size, hold_block_size, hold_block_size);
-      }
-    }
+function draw_hold_tetro(tetro_type){
+  if (tetro_type === "T") {
+    let start_x = (hold_canvas.width - hold_block_size*3) / 2
+    let start_y = (hold_canvas.height - hold_block_size*2) / 2
+    hold_context.fillStyle = colors[1];
+    hold_context.fillRect(start_x, start_y, hold_block_size, hold_block_size);
+    hold_context.fillRect(start_x + hold_block_size, start_y, hold_block_size, hold_block_size);
+    hold_context.fillRect(start_x + hold_block_size*2, start_y, hold_block_size, hold_block_size);
+    hold_context.fillRect(start_x + hold_block_size, start_y + hold_block_size, hold_block_size, hold_block_size);
+    hold_context.strokeStyle = '#000';
+    hold_context.strokeRect(start_x, start_y, hold_block_size, hold_block_size);
+    hold_context.strokeRect(start_x + hold_block_size, start_y, hold_block_size, hold_block_size);
+    hold_context.strokeRect(start_x + hold_block_size*2, start_y, hold_block_size, hold_block_size);
+    hold_context.strokeRect(start_x + hold_block_size, start_y + hold_block_size, hold_block_size, hold_block_size);
+
+  } else if (tetro_type === "O") {
+    let start_x = (hold_canvas.width - hold_block_size*2) / 2
+    let start_y = (hold_canvas.height - hold_block_size*2) / 2
+    hold_context.fillStyle = colors[2];
+    hold_context.fillRect(start_x, start_y, hold_block_size, hold_block_size);
+    hold_context.fillRect(start_x + hold_block_size, start_y, hold_block_size, hold_block_size);
+    hold_context.fillRect(start_x, start_y + hold_block_size, hold_block_size, hold_block_size);
+    hold_context.fillRect(start_x + hold_block_size, start_y + hold_block_size, hold_block_size, hold_block_size);
+    hold_context.strokeStyle = '#000'; 
+    hold_context.strokeRect(start_x, start_y, hold_block_size, hold_block_size);
+    hold_context.strokeRect(start_x + hold_block_size, start_y, hold_block_size, hold_block_size);
+    hold_context.strokeRect(start_x, start_y + hold_block_size, hold_block_size, hold_block_size);
+    hold_context.strokeRect(start_x + hold_block_size, start_y + hold_block_size, hold_block_size, hold_block_size);
+
+  } else if (tetro_type === "L") {
+    let start_x = (hold_canvas.width - hold_block_size*2) / 2
+    let start_y = (hold_canvas.height - hold_block_size*3) / 2
+    hold_context.fillStyle = colors[3];
+    hold_context.fillRect(start_x, start_y, hold_block_size, hold_block_size);
+    hold_context.fillRect(start_x, start_y + hold_block_size, hold_block_size, hold_block_size);
+    hold_context.fillRect(start_x, start_y + hold_block_size*2, hold_block_size, hold_block_size);
+    hold_context.fillRect(start_x + hold_block_size, start_y + hold_block_size*2, hold_block_size, hold_block_size);
+    hold_context.strokeStyle = '#000';
+    hold_context.strokeRect(start_x, start_y, hold_block_size, hold_block_size);
+    hold_context.strokeRect(start_x, start_y + hold_block_size, hold_block_size, hold_block_size);
+    hold_context.strokeRect(start_x, start_y + hold_block_size*2, hold_block_size, hold_block_size);
+    hold_context.strokeRect(start_x + hold_block_size, start_y + hold_block_size*2, hold_block_size, hold_block_size);
+
+  } else if (tetro_type === "J") {
+    let start_x = (hold_canvas.width - hold_block_size*2) / 2
+    let start_y = (hold_canvas.height - hold_block_size*3) / 2
+    hold_context.fillStyle = colors[4];
+    hold_context.fillRect(start_x + hold_block_size, start_y, hold_block_size, hold_block_size);
+    hold_context.fillRect(start_x + hold_block_size, start_y + hold_block_size, hold_block_size, hold_block_size);
+    hold_context.fillRect(start_x + hold_block_size, start_y + hold_block_size*2, hold_block_size, hold_block_size);
+    hold_context.fillRect(start_x, start_y + hold_block_size*2, hold_block_size, hold_block_size);
+    hold_context.strokeStyle = '#000';
+    hold_context.strokeRect(start_x + hold_block_size, start_y, hold_block_size, hold_block_size);
+    hold_context.strokeRect(start_x + hold_block_size, start_y + hold_block_size, hold_block_size, hold_block_size);
+    hold_context.strokeRect(start_x + hold_block_size, start_y + hold_block_size*2, hold_block_size, hold_block_size);
+    hold_context.strokeRect(start_x, start_y + hold_block_size*2, hold_block_size, hold_block_size);
+
+  } else if (tetro_type === "I") {
+    hold_context.fillStyle = colors[5];
+    let start_x = (hold_canvas.width - hold_block_size) / 2
+    let start_y = (hold_canvas.height - hold_block_size*4) / 2
+    hold_context.fillRect(start_x, start_y, hold_block_size, hold_block_size);
+    hold_context.fillRect(start_x, start_y+hold_block_size, hold_block_size, hold_block_size);
+    hold_context.fillRect(start_x, start_y+hold_block_size*2, hold_block_size, hold_block_size);
+    hold_context.fillRect(start_x, start_y+hold_block_size*3, hold_block_size, hold_block_size);
+    hold_context.strokeStyle = '#000';
+    hold_context.strokeRect(start_x, start_y, hold_block_size, hold_block_size);
+    hold_context.strokeRect(start_x, start_y+hold_block_size, hold_block_size, hold_block_size);
+    hold_context.strokeRect(start_x, start_y+hold_block_size*2, hold_block_size, hold_block_size);
+    hold_context.strokeRect(start_x, start_y+hold_block_size*3, hold_block_size, hold_block_size);
+
+  } else if (tetro_type === "S") {
+    hold_context.fillStyle = colors[6];
+    let start_x = (hold_canvas.width - hold_block_size*3) / 2
+    let start_y = (hold_canvas.height - hold_block_size*2) / 2
+    hold_context.fillRect(start_x + hold_block_size, start_y, hold_block_size, hold_block_size);
+    hold_context.fillRect(start_x + hold_block_size*2, start_y, hold_block_size, hold_block_size);
+    hold_context.fillRect(start_x, start_y+hold_block_size, hold_block_size, hold_block_size);
+    hold_context.fillRect(start_x + hold_block_size, start_y+hold_block_size, hold_block_size, hold_block_size);
+    hold_context.strokeStyle = '#000';
+    hold_context.strokeRect(start_x + hold_block_size, start_y, hold_block_size, hold_block_size);
+    hold_context.strokeRect(start_x + hold_block_size*2, start_y, hold_block_size, hold_block_size);
+    hold_context.strokeRect(start_x, start_y+hold_block_size, hold_block_size, hold_block_size);
+    hold_context.strokeRect(start_x + hold_block_size, start_y+hold_block_size, hold_block_size, hold_block_size);
+
+  } else if (tetro_type === "Z") {
+    hold_context.fillStyle = colors[7];
+    let start_x = (hold_canvas.width - hold_block_size*3) / 2
+    let start_y = (hold_canvas.height - hold_block_size*2) / 2
+    hold_context.fillRect(start_x, start_y, hold_block_size, hold_block_size);
+    hold_context.fillRect(start_x + hold_block_size, start_y, hold_block_size, hold_block_size);
+    hold_context.fillRect(start_x + hold_block_size, start_y+hold_block_size, hold_block_size, hold_block_size);
+    hold_context.fillRect(start_x + hold_block_size*2, start_y+hold_block_size, hold_block_size, hold_block_size);
+    hold_context.strokeStyle = '#000';
+    hold_context.strokeRect(start_x, start_y, hold_block_size, hold_block_size);
+    hold_context.strokeRect(start_x + hold_block_size, start_y, hold_block_size, hold_block_size);
+    hold_context.strokeRect(start_x + hold_block_size, start_y+hold_block_size, hold_block_size, hold_block_size);
+    hold_context.strokeRect(start_x + hold_block_size*2, start_y+hold_block_size, hold_block_size, hold_block_size);
   }
 }
 function player_reset_after_hold() {
@@ -63,9 +148,6 @@ function player_reset_after_hold() {
     draw_hold_field(player.hold_tetro_type);
   }
   }
-
-
-
 // テトリミノの回転時の他ブロックとの衝突判定を行う関数
 // true か　false を返す
 // 以下引数について
@@ -115,11 +197,19 @@ function rotate(current_tetro){
   return new_tetro;
 }
 
-// 上まで板垣追記
-
 const draw = () => {
-    context.fillStyle = "#000";
-    context.fillRect(0,0, canvas.width, canvas.height);
+    // 線の幅を設定（スケールの逆数）
+    context.lineWidth = 1 / 20;
+    // 盤面を一度削除する
+    for (let y = 0; y < arenaRow; y++){
+      for (let x = 0; x < arenaCol; x++){
+        context.fillStyle = "#000";
+        context.fillRect(20*x,20*y, 20,20);
+        context.strokeStyle = "#fff";
+        context.strokeRect(20*x,20*y, 20,20)
+      }
+    }
+
 
     // 変更した盤面を映す
     drawMatrix(arena, {x: 0, y: 0})
@@ -210,8 +300,10 @@ const drawMatrix = (matrix, offset) => {
   });
 }
 
-// ２次元配列でテトリスの場所を管理する(12*20)
-const arena = Array.from({ length: 20 }, () => Array(10).fill(0));
+// ２次元配列でテトリスの場所を管理する(10*20)
+const arenaRow = 20; // プレイフィールドの行数
+const arenaCol = 10; // プレイフィールドの列数
+const arena = Array.from({ length: arenaRow }, () => Array(arenaCol).fill(0));
 
 const player = {
   pos: {x: 0, y: 0},
@@ -517,6 +609,7 @@ let gameActive = true;    // ゲームの状態を管理するためのグロー
 function gameOver() {
   gameActive = false; // ゲームの状態を非アクティブに設定
   cancelAnimationFrame(animationId); // ゲームループを停止
+  document.getElementById('pauseButton').style.display = 'none'; // 一時停止、再開ボタンを非表示にする
   document.getElementById('restartButton').style.display = 'block'; // リスタートボタンを表示
   drawGameOver(document.querySelector('#tetris')); // ゲームオーバー表示を描画
 }
@@ -607,6 +700,8 @@ function restartGame() {
   // リスタートボタンを非表示にする
   document.getElementById('restartButton').style.display = 'none';
   document.getElementById('startButton').style.display = 'none';
+  // 一時停止・再開ボタンを表示する
+  document.getElementById('pauseButton').style.display = 'block';
 }
 
 function update() {
@@ -630,3 +725,22 @@ gameStart()
 // リスタートボタンがクリックされたときにrestartGame関数を実行
 document.getElementById('restartButton').addEventListener('click', restartGame);
 document.getElementById('startButton').addEventListener('click', restartGame);
+
+
+// 一時停止・再開ボタン
+document.getElementById("pauseButton").addEventListener("click", pauseGame);
+// 一時停止・再開の処理
+function pauseGame(){
+  if (gameActive) {
+    // 一時停止処理
+    gameActive = false;
+    cancelAnimationFrame(animationId); // アニメーションフレームの停止
+    document.getElementById("pauseButton").innerText = "Resume"; // ボタンのテキストを「Resume」に変更
+  } else {
+    // ゲームを再開
+    gameActive = true;
+    update(); // ゲーム更新を再開
+    document.getElementById("pauseButton").innerText = "Pause"; //  ボタンのテキストをPauseに戻す
+  }
+}
+

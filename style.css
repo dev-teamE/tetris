@@ -1,37 +1,64 @@
 body {
     display: flex;
-    flex-direction: row;
+    /* flex-direction: row;　 */
     justify-content: center;
     align-items: center;
     margin: 0;
     height: 100vh;
-    background-color: #000;
+    /* background-color: #000; */
+    background-image: url(images/background-img.png);
 }
+button {
+    width: 120px;
+    height: 50px;
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 20px;
+    background-color: #fff;
+    color: black;
+    border: black;
+    border-radius: 8px;
+    cursor: pointer;
+}
+button:hover {
+    background-color: gray;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+} 
+
 
 #tetris {
     border: 1px solid #fff;
 }
-
+/* 
 #scoreBoard {
     color: #fff;
     font-size: 20px;
     margin-bottom: 10px;
+} */
+#scoreBoard h3 {
+    color: #fff;
+    margin: 0; /* デフォルトマージンをリセット */
+    margin-top: 2px;
+    margin-bottom: 10px; /* キャンバスとの間隔 */
 }
 
 #restartButton {
     /* display: block; */
     display: none; /* ゲーム起動時は非表示 */
-    margin-top: 20px;
-    padding: 10px 20px;
-    font-size: 20px;
 }
 
 #startButton {
     /* display: block; */
     display: none; /* ゲーム起動時は非表示 */
-    margin-top: 20px;
-    padding: 10px 20px;
-    font-size: 20px;
+}
+#pauseButton {
+    /* display: block; */
+    display: none; /* ゲーム起動時は非表示 */
 }
 
 #game-container {
@@ -52,6 +79,12 @@ body {
     align-items: center; /* 子要素を中央揃え */
     justify-content: s;
     margin-right: 20px; /* メインエリアとの間隔 */
+}
+#hold-area h3 {
+    color: #fff;
+    margin: 0; /* デフォルトマージンをリセット */
+    margin-top: 2px;
+    margin-bottom: 10px; /* キャンバスとの間隔 */
 }
 
 #hold_canvas {
