@@ -116,21 +116,23 @@ function rotate(current_tetro){
 // 上まで板垣追記
 
 const draw = () => {
-    context.fillStyle = "#000";
-    context.fillRect(0,0, canvas.width, canvas.height);
+  context.fillStyle = "#000";
+  context.fillRect(0,0, canvas.width, canvas.height);
 
-    // 変更した盤面を映す
-    drawMatrix(arena, {x: 0, y: 0})
-    drawMatrix(player.matrix, player.pos)
-    drawGhostMatrix(ghost.matrix, ghost.pos)
-}
+  // 変更した盤面を映す
+  drawMatrix(arena, {x: 0, y: 0})
+  drawMatrix(player.matrix, player.pos)
+  drawGhostMatrix(ghost.matrix, ghost.pos)
+  
+};
+
 
 // ピースの構造を定義(数字は色のインデックス)
 const createPiece = (type) => {
     if (type === 'T'){
         return [
-          [1, 1, 1],
           [0, 1, 0],
+          [1, 1, 1],
           [0, 0, 0],      
         ];
     } else if (type === "O") {
@@ -140,22 +142,22 @@ const createPiece = (type) => {
         ];
     } else if (type === "L") {
         return [
-          [0, 3, 0],
-          [0, 3, 0],
-          [0, 3, 3],
+          [0, 0, 3],
+          [3, 3, 3],
+          [0, 0, 0],
         ];
     } else if (type === "J") {
         return [
-          [0, 4, 0],
-          [0, 4, 0],
-          [4, 4, 0],
+          [4, 0, 0],
+          [4, 4, 4],
+          [0, 0, 0],
         ];
     } else if (type === "I") {
         return [
-          [0, 5, 0, 0],
-          [0, 5, 0, 0],
-          [0, 5, 0, 0],
-          [0, 5, 0, 0],
+          [5, 5, 5, 5],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
         ];
     } else if (type === 'S') {
         return [
@@ -188,6 +190,50 @@ const colors = [
  * @param {object} matrix - ピースの形状と配置を表す2次元配列
  * @param {object} offset - ピースの描画位置を指定するオブジェクト. xとyのプロパティを持つ
  */
+
+//画像読込関数
+async function load_image(path){
+  const t_img = new Image();
+  return new Promise(
+      (resolve) => {
+          t_img.onload = () => {
+              resolve(t_img);
+          }
+          t_img.src = path;
+      }
+  )
+}
+
+
+const drawScreen = async (matrix, offset) => {
+  try {
+    let img = await load_image("assets/Board/Board.png")
+    context.drawImage(img ,x+offset.x, y+offset.y,10, 20);
+  } catch (error) {
+    console.error(error); // エラーが発生した場合の処理
+  }
+};
+
+const drawMatrix2 = async (matrix, offset) => {
+  try {
+    let img = await load_image("./assets/Single Blocks/Blue.png")
+
+    // 線の幅を設定（スケールの逆数）
+    context.lineWidth = 1 / 20;
+
+    // matrixを描画
+    matrix.forEach((row, y) => {
+      row.forEach((value, x) => {
+        if (value !== 0) {
+          // パターンを使用して塗りつぶし
+          context.drawImage(img ,x+offset.x, y+offset.y, 1, 1);
+        }
+      });
+    });
+  } catch (error) {
+    console.error(error); // エラーが発生した場合の処理
+  }
+};
 
 // ピースを描写する
 const drawMatrix = (matrix, offset) => {
@@ -417,7 +463,7 @@ function playerDrop(){
 
   if(collide(arena, player)){
     player.pos.y--;
-    ghostTetrimono()
+    // ghostTetrimono()
     merge(arena, player)
     if (!playerReset()) {
       // playerResetがfalseを返した場合（ゲームオーバー時）、ここで処理を終了
@@ -431,6 +477,7 @@ function playerDrop(){
 function ghostTetrimono() {
   ghost.matrix = player.matrix;
   ghost.pos.x = player.pos.x;
+  ghost.pos.y = player.pos.y
   while (!collide(arena, ghost)) ghost.pos.y++;
   while (collide(arena,ghost)) ghost.pos.y--
 }
@@ -438,9 +485,13 @@ function ghostTetrimono() {
 function playerHardDrop() {
   while (player.pos.y < ghost.pos.y) player.pos.y++
   merge(arena,player)
-  playerReset()
+  if (!playerReset()) {
+    // playerResetがfalseを返した場合（ゲームオーバー時）、ここで処理を終了
+    return;
+  }
   arenaSweep()
   updateScore()
+  currentTime = 0
 }
 
 
@@ -625,12 +676,12 @@ function restartGame() {
   player.score = 0;
   // スコア表示を更新
   updateScore();
-  // 
+  // ピースをシャッフルし直す
   nextPieces = shuffle([...tetrominoes])
   // プレイヤーのピースをリセット
   playerReset();
   // アニメーションのタイマーをリセット
-  lastTime = 0;
+  currentTime = 0;
   // ゲームを再開
   update();
   // リスタートボタンを非表示にする
