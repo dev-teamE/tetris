@@ -4,7 +4,7 @@ context.scale(20,20);
 
 
 // 以下hold機能に関する変数、関数
-// canvasの値を定義するクラス
+// ホールドエリアのcanvasの値を定義するクラス
 class CanvasHold {
   constructor(canvasId, blockSize, row, col) {
     this.canvas = document.getElementById(canvasId);
@@ -12,6 +12,7 @@ class CanvasHold {
     this.blockSize = blockSize;
     this.row = row;
     this.col = col;
+    this.initCanvas();
   }
     canvasHeight() {
       return this.blockSize * this.row;
@@ -19,6 +20,11 @@ class CanvasHold {
     canvasWidth() {
       return this.blockSize * this.col;
     }
+    initCanvas() {
+      this.canvas.height = this.canvasHeight();
+      this.canvas.width = this.canvasWidth();
+    }
+
 }
 const canvasHold = new CanvasHold("hold_canvas", 20, 5, 5);
 
