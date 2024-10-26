@@ -70,9 +70,9 @@ button:active {
     border: 3px solid rgb(51, 98, 194); 
     border-radius: 8px;
 }
-#tetris {
-    /* border: 1px solid #fff; */
-}
+/* #tetris {
+    border: 1px solid #fff;
+} */
 /* 
 #scoreBoard {
     color: #fff;
@@ -150,6 +150,6 @@ button:active {
     margin-bottom: 14px; /* キャンバスとの間隔 */
 }
 
-#followingPieces {
-    /* border: 1px solid #fff; */
-}
+/* #followingPieces {
+    border: 1px solid #fff;
+} */
