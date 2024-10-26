@@ -2,30 +2,36 @@ const canvas = document.querySelector("#tetris");
 const context = canvas.getContext("2d");
 context.scale(20,20);
 
+
 // 以下hold機能に関する変数、関数
 let hold_canvas = document.getElementById('hold_canvas');
 let hold_context = hold_canvas.getContext('2d');
-let hold_block_size = 20;
 
 // ホールドフィールドサイズ
+let hold_block_size = 20;
 let hold_field_col = 5;
 hold_canvas.width = hold_field_col * hold_block_size;
 let hold_field_row = 5;
 hold_canvas.height = hold_field_col * hold_block_size;
-let hold_field = [] // hold_fieldに表示するテトリミノ情報(２次元配列)
 
 function draw_hold_field(tetro_type){ // ホールドフィールドを描画する関数
   clear_hold_field();
   draw_hold_tetro(tetro_type); // ホールドしたテトロミノを描画する
+  // 外側の枠線を描画する　→ 動作しないのでcssで記述
+  // hold_context.strokeStyle = "rgb(45, 46, 131)";
+  // hold_context.lineWidth = 10;
+  // hold_context.strokeRect(0, 2.5, hold_canvas.width, hold_canvas.height);
 }
 function clear_hold_field(){// 現在ホールドフィールドに表示されているテトロミノを削除する
     // 盤面を一度削除する
     for (let y = 0; y < hold_field_row; y++){
       for (let x = 0; x < hold_field_col; x++){
+        // ブロックの背景色
         hold_context.fillStyle = "#000";
         hold_context.fillRect(x * hold_block_size,y * hold_block_size, hold_block_size, hold_block_size);
-        hold_context.strokeStyle = "rgba(255, 255, 255, 0.5)";
-        hold_context.strokeRect(x * hold_block_size,y * hold_block_size, hold_block_size, hold_block_size);
+        // 内側の格子線の色
+        // hold_context.strokeStyle = "rgba(255, 255, 255, 0.3)";
+        // hold_context.strokeRect(x * hold_block_size,y * hold_block_size, hold_block_size, hold_block_size);
       }
     }
 }
@@ -298,9 +304,7 @@ const drawMatrix = (matrix, offset) => {
 }
 
 // ２次元配列でテトリスの場所を管理する(10*20)
-const arenaRow = 20; // プレイフィールドの行数
-const arenaCol = 10; // プレイフィールドの列数
-const arena = Array.from({ length: arenaRow }, () => Array(arenaCol).fill(0));
+const arena = Array.from({ length: 20 }, () => Array(10).fill(0));
 
 const player = {
   pos: {x: 0, y: 0},
@@ -531,8 +535,10 @@ document.addEventListener('keydown', (event) => {
       }
       break;
     case 'Shift': // Shiftを押した時の処理
-      if(!player.hold_used){
-        player_reset_after_hold();
+      if (gameActive) {
+        if(!player.hold_used){
+          player_reset_after_hold();
+        }
       }
       break;
   }

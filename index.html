@@ -6,33 +6,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tetris Lv1</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-5Mpo2VgbM0RLuPvEZ/8cMboEmT0dKlT5/UcJH3ls5g/3K8t+v5s3mOXB4+5m5zHo" crossorigin="anonymous">
 </head>
 
 <body>
     <div class="container">
+        <div id="logo"><img src="images/Tetrislogo.png" alt="#" class="large-image"></div>
         <div id="game-container">
-            <div id="hold-area">
+            <div class="area" id="hold-area">
                 <h3>Hold</h3>
-                <canvas id="hold_canvas"></canvas>
+                <canvas class="box"  id="hold_canvas"></canvas>
+                <button id="startButton">start</button>
+                <button id="pauseButton">Pause</button>
+                <button id="restartButton">Restart</button>
             </div>
-            <div id="main-area">
+            <div class="area" id="main-area">
                 <div id="scoreBoard">
                     <h3>Score: <span id="score">0</span></h3>
                 </div>
-                <canvas id="tetris" width="200" height="400"></canvas>
+                <canvas class="box" id="tetris" width="200" height="400"></canvas>
             </div>
-            <div id="next-area">
+            <div class="area" id="next-area">
                 <h3>Next</h3>
                 <div id="nextPieces">
-                    <canvas id="nextPiece" width="100" height="100"></canvas>
-                    <canvas id="followingPieces" width="100" height="280"></canvas>
+                    <canvas class="box" id="nextPiece" width="100" height="100"></canvas>
+                    <canvas class="box" id="followingPieces" width="100" height="280"></canvas>
                 </div>
             </div>
         </div>
-        <button id="startButton">start</button>
-        <button id="pauseButton">Pause</button>
-        <button id="restartButton">Restart</button>
     </div>
     <script src="app.js"></script>
 </body>
