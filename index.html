@@ -9,21 +9,28 @@
 </head>
 
 <body>
-    <div id="game-container">
-        <dib id="hold-area">
-            <canvas id="hold_canvas" width="100" height="100"></canvas>
-        </div>
-        <div id="main-area">
-            <div id="scoreBoard">Score: <span id="score">0</span></div>
-            <canvas id="tetris" width="200" height="400"></canvas>
-            <button id="restartButton">Restart</button>
-            <button id="startButton">start</button>
-        </div>
-        <div id="next-area">
-            <h3>Next</h3>
-            <div id="nextPieces">
-                <canvas id="nextPiece" width="100" height="100"></canvas>
-                <canvas id="followingPieces" width="100" height="280"></canvas>
+    <div class="container">
+        <div id="logo"><img src="images/Tetrislogo.png" alt="#" class="large-image"></div>
+        <div id="game-container">
+            <div class="area" id="hold-area">
+                <h3>Hold</h3>
+                <canvas class="box"  id="hold_canvas"></canvas>
+                <button id="startButton">start</button>
+                <button id="pauseButton">Pause</button>
+                <button id="restartButton">Restart</button>
+            </div>
+            <div class="area" id="main-area">
+                <div id="scoreBoard">
+                    <h3>Score: <span id="score">0</span></h3>
+                </div>
+                <canvas class="box" id="tetris" width="200" height="400"></canvas>
+            </div>
+            <div class="area" id="next-area">
+                <h3>Next</h3>
+                <div id="nextPieces">
+                    <canvas class="box" id="nextPiece" width="100" height="100"></canvas>
+                    <canvas class="box" id="followingPieces" width="100" height="280"></canvas>
+                </div>
             </div>
         </div>
     </div>

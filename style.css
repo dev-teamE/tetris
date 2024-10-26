@@ -1,43 +1,109 @@
 body {
     display: flex;
-    flex-direction: row;
     justify-content: center;
     align-items: center;
     margin: 0;
     height: 100vh;
-    background-color: #000;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(images/background-img.png);
 }
+button { /* スタート、一時停止・再開、リスタートボタン共通の設定 */
+    width: 120px;
+    height: 50px;
+    margin-top: 250px;
+    background: linear-gradient(to bottom, #00bfff, #007acc); /* 青いグラデーション */
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    border: none;
+    border-radius: 30px; 
+    box-shadow: 0 5px #333, 0 10px 15px rgba(0, 0, 0, 0.2); /* 立体感を出す影 */
+    text-transform: uppercase;
+    cursor: pointer;
+    outline: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+button:hover {
+    background-color: gray;
+}
+button:active {
+    box-shadow: 0 3px #333; /* 押し込んだように影を小さくする */
+    transform: translateY(2px); /* ボタンを少し下に動かす */
+  }
 
-#tetris {
+/* 一番外枠のボックス設定 */
+.container {
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: rgba(45, 46, 131, 0.8);
+    border: 3px solid rgb(51, 98, 194); 
+    border-radius: 8px;
+    padding: 10px 20px;
+} 
+
+/* ホールドエリア、プレイエリア、ネクストエリアのcanvasのエリアの設定 */
+.box { 
+    background-color: black;
+    border: 3px solid rgb(51, 98, 194); /*一番内側の枠線*/
+    border-radius: 8px;
+
+}
+/* ロゴの設定 */
+#logo {
+    transform: scale(1.5);
+    margin-bottom: 2rem;
+    margin-top: 2rem;
+}
+/* ゲームに関係するエリアの設定 */
+#game-container {
+    height: 60vh;
+    width: 60vh;
+    display: flex; /* デフォルトの値はrow　横並びに */
+    justify-content: center; /* メインエリアとネクストピースを横中央揃え */
+    align-items: center; /* 中央揃えにする */   
+    /* background-color: rgba(46, 17, 40 ,0.7); */
+    /* border: 1px solid #000; */
+    /* background-color: rgba(23, 44, 97, 1); */
+    border: 3px solid rgb(51, 98, 194); 
+    border-radius: 8px;
+}
+/* #tetris {
     border: 1px solid #fff;
-}
-
+} */
+/* 
 #scoreBoard {
     color: #fff;
     font-size: 20px;
     margin-bottom: 10px;
+} */
+#scoreBoard h3 {
+    color: #fff;
+    margin: 0; /* デフォルトマージンをリセット */
+    margin-top: 2px;
+    margin-bottom: 10px; /* キャンバスとの間隔 */
 }
 
 #restartButton {
     /* display: block; */
     display: none; /* ゲーム起動時は非表示 */
-    margin-top: 20px;
-    padding: 10px 20px;
-    font-size: 20px;
 }
 
 #startButton {
     /* display: block; */
     display: none; /* ゲーム起動時は非表示 */
-    margin-top: 20px;
-    padding: 10px 20px;
-    font-size: 20px;
+}
+#pauseButton {
+    /* display: block; */
+    display: none; /* ゲーム起動時は非表示 */
 }
 
-#game-container {
-    display: flex; /* デフォルトの値はrow　横並びに */
-    justify-content: center; /* メインエリアとネクストピースを横中央揃え */
-    align-items: start; /* 上端揃えにする */   
+
+/* game-containerの各要素の配置を統一するため、各要素の高さを指定 */
+.area {
+    height: 90%;
 }
 
 #main-area {
@@ -53,9 +119,11 @@ body {
     justify-content: s;
     margin-right: 20px; /* メインエリアとの間隔 */
 }
-
-#hold_canvas {
-    border: 1px solid #fff;
+#hold-area h3 {
+    color: #fff;
+    margin: 0; /* デフォルトマージンをリセット */
+    margin-top: 2px;
+    margin-bottom: 10px; /* キャンバスとの間隔 */
 }
 
 #next-area {
@@ -78,10 +146,10 @@ body {
 }
 
 #nextPiece {
-    border: 1px solid #fff;
-    margin-bottom: 18px; /* キャンバスとの間隔 */
+    /* border: 1px solid #fff; */
+    margin-bottom: 14px; /* キャンバスとの間隔 */
 }
 
-#followingPieces {
+/* #followingPieces {
     border: 1px solid #fff;
-}
+} */
