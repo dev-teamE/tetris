@@ -19,8 +19,15 @@ function draw_hold_field(tetro_type){ // ホールドフィールドを描画す
   draw_hold_tetro(tetro_type); // ホールドしたテトロミノを描画する
 }
 function clear_hold_field(){// 現在ホールドフィールドに表示されているテトロミノを削除する
-  hold_context.fillStyle = "#000080";
-  hold_context.fillRect(0,0, hold_canvas.width, hold_canvas.height);
+    // 盤面を一度削除する
+    for (let y = 0; y < hold_field_row; y++){
+      for (let x = 0; x < hold_field_col; x++){
+        hold_context.fillStyle = "#000";
+        hold_context.fillRect(x * hold_block_size,y * hold_block_size, hold_block_size, hold_block_size);
+        hold_context.strokeStyle = "rgba(255, 255, 255, 0.5)";
+        hold_context.strokeRect(x * hold_block_size,y * hold_block_size, hold_block_size, hold_block_size);
+      }
+    }
 }
 function draw_hold_tetro(tetro_type){
   if (tetro_type === "T") {
@@ -198,18 +205,8 @@ function rotate(current_tetro){
 }
 
 const draw = () => {
-    // 線の幅を設定（スケールの逆数）
-    context.lineWidth = 1 / 20;
-    // 盤面を一度削除する
-    for (let y = 0; y < arenaRow; y++){
-      for (let x = 0; x < arenaCol; x++){
-        context.fillStyle = "#000";
-        context.fillRect(20*x,20*y, 20,20);
-        context.strokeStyle = "#fff";
-        context.strokeRect(20*x,20*y, 20,20)
-      }
-    }
-
+  context.fillStyle = "#000";
+  context.fillRect(0,0, canvas.width, canvas.height);
 
     // 変更した盤面を映す
     drawMatrix(arena, {x: 0, y: 0})
@@ -511,7 +508,6 @@ function playerDrop(){
 
 
 document.addEventListener('keydown', (event) => { 
-  if (!gameActive) return;
   switch (event.key) {
     case 'ArrowLeft':
       playerMove(-1);
@@ -728,7 +724,10 @@ document.getElementById('startButton').addEventListener('click', restartGame);
 
 
 // 一時停止・再開ボタン
-document.getElementById("pauseButton").addEventListener("click", pauseGame);
+document.getElementById("pauseButton").addEventListener("click", function(){
+  pauseGame();
+  document.getElementById("pauseButton").blur(); // ボタンからフォーカスを外す 
+})
 // 一時停止・再開の処理
 function pauseGame(){
   if (gameActive) {
@@ -743,4 +742,3 @@ function pauseGame(){
     document.getElementById("pauseButton").innerText = "Pause"; //  ボタンのテキストをPauseに戻す
   }
 }
-
