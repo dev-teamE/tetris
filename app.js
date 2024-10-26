@@ -330,6 +330,8 @@ const player = {
   hold_used: false, // １回の落下中にホールド機能を利用したかどうかの状態
   matrix: null,
   score : 0,
+  totalLines: 0,
+  level: 1,
 };
 
 function playerReset() {
@@ -588,12 +590,13 @@ function arenaSweep() {
       ++y; // 行を削除したことで落ちてきた分の行もチェックするため
       ++linesCleared; // スコア計算に使用するため、消した行数をカウントする
   }
-  
-  // 消した行数に応じてスコアを加算
+
   if (linesCleared > 0) {
-      const scores = [0, 100, 300, 500, 800];
-      // linesClearedはインデックスとして機能
-      player.score += scores[linesCleared];
+    player.totalLines += linesCleared;
+    const scores = [0, 100, 300, 500, 800];
+    player.score += scores[linesCleared] * player.level;
+    checkLevelUp();
+    updateScore();
   }
 }
 
@@ -604,6 +607,33 @@ function updateScore() {
   /// innerTextでその要素のテキストを更新
   /// player.scoreの値を画面に反映させる
   document.querySelector('#score').innerText = player.score;
+  document.querySelector('#lines').innerText = player.totalLines;
+}
+
+// ベースの落下速度（ms）とレベルごとの速度減少率を定義
+const BASE_DROP_INTERVAL = 1000;  // 1秒
+const SPEED_INCREASE_RATE = 0.85; // 各レベルで85%の速度に
+
+// 現在のレベルに基づいて落下間隔を計算する関数
+function calculateDropInterval(level) {
+  return BASE_DROP_INTERVAL * Math.pow(SPEED_INCREASE_RATE, level - 1);
+}
+
+// レベルアップの条件をチェックし、必要に応じてレベルアップする関数
+function checkLevelUp() {
+  const newLevel = Math.floor(player.totalLines / 10) + 1;
+  if (newLevel > player.level) {
+    player.level = newLevel;
+    // 新しいレベルに基づいて落下間隔を更新
+    dropInterval = calculateDropInterval(player.level);
+    // レベルアップ表示を更新
+    updateLevel();
+  }
+}
+
+// レベル表示を更新する関数
+function updateLevel() {
+  document.querySelector('#level').innerText = player.level;
 }
 
 // arenaSweep()とupdateScore()は、ピースをロックする関数に組み込む
@@ -645,57 +675,48 @@ function gameStart() {
 // canvasが二つに増えたため、グローバルのcanvas（Tetris）を指定。（将来的にはクラスで分けたい）
 function drawGameOver(canvas) {
   const context = canvas.getContext('2d');
-  context.save();  // 現在の描画状態を保存
+  context.save();
 
-  // スケーリングをリセット
   context.setTransform(1, 0, 0, 1, 0, 0);
-
-  // 半透明の黒背景
   context.fillStyle = 'rgba(0, 0, 0, 0.75)';
   context.fillRect(0, 0, canvas.width, canvas.height);
 
-  // "GAME OVER" テキスト
   context.fillStyle = '#FF0000';
-  context.font = 'bold 36px Arial'; // フォントを太字に、サイズを大きく
+  context.font = 'bold 30px Arial';
   context.textAlign = 'center';
   context.textBaseline = 'middle';
-  context.fillText('GAME OVER', canvas.width / 2, canvas.height / 2);
+  context.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 30);
 
-  // スコア表示
   context.fillStyle = '#FFFFFF';
   context.font = '24px Arial';
-  context.fillText(`Score: ${player.score}`, canvas.width / 2, canvas.height / 2 + 40);
+  context.fillText(`Score: ${player.score}`, canvas.width / 2, canvas.height / 2 + 10);
+  context.fillText(`Level: ${player.level}`, canvas.width / 2, canvas.height / 2 + 40);
+  context.fillText(`Lines: ${player.totalLines}`, canvas.width / 2, canvas.height / 2 + 70);
 
-  context.restore();  // 描画状態を元に戻す
+  context.restore();
 }
-
 
 // ゲームスタート画面の描画
 // canvasが二つに増えたため、グローバルのcanvas（Tetris）を指定。（将来的にはクラスで分けたい）
 function drawGameStart(canvas) {
   const context = canvas.getContext('2d');
-  context.save();  // 現在の描画状態を保存
+  context.save();
 
-  // スケーリングをリセット
   context.setTransform(1, 0, 0, 1, 0, 0);
-
-  // 半透明の黒背景
   context.fillStyle = 'rgba(0, 0, 0, 0.75)';
   context.fillRect(0, 0, canvas.width, canvas.height);
 
-  // "GAME OVER" テキスト
   context.fillStyle = '#00FF00';
-  context.font = 'bold 36px Arial'; // フォントを太字に、サイズを大きく
+  context.font = 'bold 36px Arial';
   context.textAlign = 'center';
   context.textBaseline = 'middle';
-  context.fillText('TETRIS', canvas.width / 2, canvas.height / 2);
+  context.fillText('TETRIS', canvas.width / 2, canvas.height / 2 - 30);
 
-  // スコア表示
   context.fillStyle = '#FFFFFF';
   context.font = '18px Arial';
-  context.fillText(`Highscore: ${player.score}`, canvas.width / 2, canvas.height / 2 + 40);
+  context.fillText('Press Start to Play!', canvas.width / 2, canvas.height / 2 + 20);
 
-  context.restore();  // 描画状態を元に戻す
+  context.restore();
 }
 
 function restartGame() {
@@ -705,6 +726,12 @@ function restartGame() {
   arena.forEach(row => row.fill(0));
   // プレイヤーのスコアをリセット
   player.score = 0;
+  // ライン数をリセット
+  player.totalLines = 0;
+  // レベルをリセット
+  player.level = 1;
+  // 落下速度をリセット
+  dropInterval = calculateDropInterval(player.level);
   // ホールドしているテトロミノをリセット
   player.hold_tetro_type = null;
   clear_hold_field();
