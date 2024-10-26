@@ -4,135 +4,146 @@ context.scale(20,20);
 
 
 // 以下hold機能に関する変数、関数
-let hold_canvas = document.getElementById('hold_canvas');
-let hold_context = hold_canvas.getContext('2d');
+// canvasの値を定義するクラス
+class CanvasHold {
+  constructor(canvasId, blockSize, row, col) {
+    this.canvas = document.getElementById(canvasId);
+    this.context = this.canvas.getContext("2d");
+    this.blockSize = blockSize;
+    this.row = row;
+    this.col = col;
+  }
+    canvasHeight() {
+      return this.blockSize * this.row;
+    }
+    canvasWidth() {
+      return this.blockSize * this.col;
+    }
+}
+const canvasHold = new CanvasHold("hold_canvas", 20, 5, 5);
 
 // ホールドフィールドサイズ
-let hold_block_size = 20;
-let hold_field_col = 5;
-hold_canvas.width = hold_field_col * hold_block_size;
-let hold_field_row = 5;
-hold_canvas.height = hold_field_col * hold_block_size;
+
 
 function draw_hold_field(tetro_type){ // ホールドフィールドを描画する関数
   clear_hold_field();
   draw_hold_tetro(tetro_type); // ホールドしたテトロミノを描画する
   // 外側の枠線を描画する　→ 動作しないのでcssで記述
-  // hold_context.strokeStyle = "rgb(45, 46, 131)";
-  // hold_context.lineWidth = 10;
-  // hold_context.strokeRect(0, 2.5, hold_canvas.width, hold_canvas.height);
+  // canvasHold.context.strokeStyle = "rgb(45, 46, 131)";
+  // canvasHold.context.lineWidth = 10;
+  // canvasHold.context.strokeRect(0, 2.5, canvasHold.canvasWidth(, canvasHold.canvasHeight());
 }
 function clear_hold_field(){// 現在ホールドフィールドに表示されているテトロミノを削除する
     // 盤面を一度削除する
-    for (let y = 0; y < hold_field_row; y++){
-      for (let x = 0; x < hold_field_col; x++){
+    for (let y = 0; y < canvasHold.row; y++){
+      for (let x = 0; x < canvasHold.col; x++){
         // ブロックの背景色
-        hold_context.fillStyle = "#000";
-        hold_context.fillRect(x * hold_block_size,y * hold_block_size, hold_block_size, hold_block_size);
+        canvasHold.context.fillStyle = "#000";
+        canvasHold.context.fillRect(x * canvasHold.blockSize,y * canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
         // 内側の格子線の色
-        // hold_context.strokeStyle = "rgba(255, 255, 255, 0.3)";
-        // hold_context.strokeRect(x * hold_block_size,y * hold_block_size, hold_block_size, hold_block_size);
+        // canvasHold.context.strokeStyle = "rgba(255, 255, 255, 0.3)";
+        // canvasHold.context.strokeRect(x * hold_block_size,y * hold_block_size, hold_block_size, hold_block_size);
       }
     }
 }
 function draw_hold_tetro(tetro_type){
   if (tetro_type === "T") {
-    let start_x = (hold_canvas.width - hold_block_size*3) / 2
-    let start_y = (hold_canvas.height - hold_block_size*2) / 2
-    hold_context.fillStyle = colors[1];
-    hold_context.fillRect(start_x, start_y, hold_block_size, hold_block_size);
-    hold_context.fillRect(start_x + hold_block_size, start_y, hold_block_size, hold_block_size);
-    hold_context.fillRect(start_x + hold_block_size*2, start_y, hold_block_size, hold_block_size);
-    hold_context.fillRect(start_x + hold_block_size, start_y + hold_block_size, hold_block_size, hold_block_size);
-    hold_context.strokeStyle = '#000';
-    hold_context.strokeRect(start_x, start_y, hold_block_size, hold_block_size);
-    hold_context.strokeRect(start_x + hold_block_size, start_y, hold_block_size, hold_block_size);
-    hold_context.strokeRect(start_x + hold_block_size*2, start_y, hold_block_size, hold_block_size);
-    hold_context.strokeRect(start_x + hold_block_size, start_y + hold_block_size, hold_block_size, hold_block_size);
+    let start_x = (canvasHold.canvasWidth() - canvasHold.blockSize*3) / 2
+    let start_y = (canvasHold.canvasHeight() - canvasHold.blockSize*2) / 2
+    canvasHold.context.fillStyle = colors[1];
+    canvasHold.context.fillRect(start_x, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x + canvasHold.blockSize, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x + canvasHold.blockSize*2, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x + canvasHold.blockSize, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeStyle = '#000';
+    canvasHold.context.strokeRect(start_x, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x + canvasHold.blockSize, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x + canvasHold.blockSize*2, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x + canvasHold.blockSize, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
 
   } else if (tetro_type === "O") {
-    let start_x = (hold_canvas.width - hold_block_size*2) / 2
-    let start_y = (hold_canvas.height - hold_block_size*2) / 2
-    hold_context.fillStyle = colors[2];
-    hold_context.fillRect(start_x, start_y, hold_block_size, hold_block_size);
-    hold_context.fillRect(start_x + hold_block_size, start_y, hold_block_size, hold_block_size);
-    hold_context.fillRect(start_x, start_y + hold_block_size, hold_block_size, hold_block_size);
-    hold_context.fillRect(start_x + hold_block_size, start_y + hold_block_size, hold_block_size, hold_block_size);
-    hold_context.strokeStyle = '#000'; 
-    hold_context.strokeRect(start_x, start_y, hold_block_size, hold_block_size);
-    hold_context.strokeRect(start_x + hold_block_size, start_y, hold_block_size, hold_block_size);
-    hold_context.strokeRect(start_x, start_y + hold_block_size, hold_block_size, hold_block_size);
-    hold_context.strokeRect(start_x + hold_block_size, start_y + hold_block_size, hold_block_size, hold_block_size);
+    let start_x = (canvasHold.canvasWidth() - canvasHold.blockSize*2) / 2
+    let start_y = (canvasHold.canvasHeight() - canvasHold.blockSize*2) / 2
+    canvasHold.context.fillStyle = colors[2];
+    canvasHold.context.fillRect(start_x, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x + canvasHold.blockSize, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x + canvasHold.blockSize, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeStyle = '#000'; 
+    canvasHold.context.strokeRect(start_x, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x + canvasHold.blockSize, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x + canvasHold.blockSize, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
 
   } else if (tetro_type === "L") {
-    let start_x = (hold_canvas.width - hold_block_size*2) / 2
-    let start_y = (hold_canvas.height - hold_block_size*3) / 2
-    hold_context.fillStyle = colors[3];
-    hold_context.fillRect(start_x, start_y, hold_block_size, hold_block_size);
-    hold_context.fillRect(start_x, start_y + hold_block_size, hold_block_size, hold_block_size);
-    hold_context.fillRect(start_x, start_y + hold_block_size*2, hold_block_size, hold_block_size);
-    hold_context.fillRect(start_x + hold_block_size, start_y + hold_block_size*2, hold_block_size, hold_block_size);
-    hold_context.strokeStyle = '#000';
-    hold_context.strokeRect(start_x, start_y, hold_block_size, hold_block_size);
-    hold_context.strokeRect(start_x, start_y + hold_block_size, hold_block_size, hold_block_size);
-    hold_context.strokeRect(start_x, start_y + hold_block_size*2, hold_block_size, hold_block_size);
-    hold_context.strokeRect(start_x + hold_block_size, start_y + hold_block_size*2, hold_block_size, hold_block_size);
+    let start_x = (canvasHold.canvasWidth() - canvasHold.blockSize*2) / 2
+    let start_y = (canvasHold.canvasHeight() - canvasHold.blockSize*3) / 2
+    canvasHold.context.fillStyle = colors[3];
+    canvasHold.context.fillRect(start_x, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x, start_y + canvasHold.blockSize*2, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x + canvasHold.blockSize, start_y + canvasHold.blockSize*2, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeStyle = '#000';
+    canvasHold.context.strokeRect(start_x, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x, start_y + canvasHold.blockSize*2, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x + canvasHold.blockSize, start_y + canvasHold.blockSize*2, canvasHold.blockSize, canvasHold.blockSize);
 
   } else if (tetro_type === "J") {
-    let start_x = (hold_canvas.width - hold_block_size*2) / 2
-    let start_y = (hold_canvas.height - hold_block_size*3) / 2
-    hold_context.fillStyle = colors[4];
-    hold_context.fillRect(start_x + hold_block_size, start_y, hold_block_size, hold_block_size);
-    hold_context.fillRect(start_x + hold_block_size, start_y + hold_block_size, hold_block_size, hold_block_size);
-    hold_context.fillRect(start_x + hold_block_size, start_y + hold_block_size*2, hold_block_size, hold_block_size);
-    hold_context.fillRect(start_x, start_y + hold_block_size*2, hold_block_size, hold_block_size);
-    hold_context.strokeStyle = '#000';
-    hold_context.strokeRect(start_x + hold_block_size, start_y, hold_block_size, hold_block_size);
-    hold_context.strokeRect(start_x + hold_block_size, start_y + hold_block_size, hold_block_size, hold_block_size);
-    hold_context.strokeRect(start_x + hold_block_size, start_y + hold_block_size*2, hold_block_size, hold_block_size);
-    hold_context.strokeRect(start_x, start_y + hold_block_size*2, hold_block_size, hold_block_size);
+    let start_x = (canvasHold.canvasWidth() - canvasHold.blockSize*2) / 2
+    let start_y = (canvasHold.canvasHeight() - canvasHold.blockSize*3) / 2
+    canvasHold.context.fillStyle = colors[4];
+    canvasHold.context.fillRect(start_x + canvasHold.blockSize, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x + canvasHold.blockSize, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x + canvasHold.blockSize, start_y + canvasHold.blockSize*2, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x, start_y + canvasHold.blockSize*2, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeStyle = '#000';
+    canvasHold.context.strokeRect(start_x + canvasHold.blockSize, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x + canvasHold.blockSize, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x + canvasHold.blockSize, start_y + canvasHold.blockSize*2, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x, start_y + canvasHold.blockSize*2, canvasHold.blockSize, canvasHold.blockSize);
 
   } else if (tetro_type === "I") {
-    hold_context.fillStyle = colors[5];
-    let start_x = (hold_canvas.width - hold_block_size) / 2
-    let start_y = (hold_canvas.height - hold_block_size*4) / 2
-    hold_context.fillRect(start_x, start_y, hold_block_size, hold_block_size);
-    hold_context.fillRect(start_x, start_y+hold_block_size, hold_block_size, hold_block_size);
-    hold_context.fillRect(start_x, start_y+hold_block_size*2, hold_block_size, hold_block_size);
-    hold_context.fillRect(start_x, start_y+hold_block_size*3, hold_block_size, hold_block_size);
-    hold_context.strokeStyle = '#000';
-    hold_context.strokeRect(start_x, start_y, hold_block_size, hold_block_size);
-    hold_context.strokeRect(start_x, start_y+hold_block_size, hold_block_size, hold_block_size);
-    hold_context.strokeRect(start_x, start_y+hold_block_size*2, hold_block_size, hold_block_size);
-    hold_context.strokeRect(start_x, start_y+hold_block_size*3, hold_block_size, hold_block_size);
+    canvasHold.context.fillStyle = colors[5];
+    let start_x = (canvasHold.canvasWidth() - canvasHold.blockSize) / 2
+    let start_y = (canvasHold.canvasHeight() - canvasHold.blockSize*4) / 2
+    canvasHold.context.fillRect(start_x, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x, start_y+canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x, start_y+canvasHold.blockSize*2, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x, start_y+canvasHold.blockSize*3, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeStyle = '#000';
+    canvasHold.context.strokeRect(start_x, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x, start_y+canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x, start_y+canvasHold.blockSize*2, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x, start_y+canvasHold.blockSize*3, canvasHold.blockSize, canvasHold.blockSize);
 
   } else if (tetro_type === "S") {
-    hold_context.fillStyle = colors[6];
-    let start_x = (hold_canvas.width - hold_block_size*3) / 2
-    let start_y = (hold_canvas.height - hold_block_size*2) / 2
-    hold_context.fillRect(start_x + hold_block_size, start_y, hold_block_size, hold_block_size);
-    hold_context.fillRect(start_x + hold_block_size*2, start_y, hold_block_size, hold_block_size);
-    hold_context.fillRect(start_x, start_y+hold_block_size, hold_block_size, hold_block_size);
-    hold_context.fillRect(start_x + hold_block_size, start_y+hold_block_size, hold_block_size, hold_block_size);
-    hold_context.strokeStyle = '#000';
-    hold_context.strokeRect(start_x + hold_block_size, start_y, hold_block_size, hold_block_size);
-    hold_context.strokeRect(start_x + hold_block_size*2, start_y, hold_block_size, hold_block_size);
-    hold_context.strokeRect(start_x, start_y+hold_block_size, hold_block_size, hold_block_size);
-    hold_context.strokeRect(start_x + hold_block_size, start_y+hold_block_size, hold_block_size, hold_block_size);
+    canvasHold.context.fillStyle = colors[6];
+    let start_x = (canvasHold.canvasWidth() - canvasHold.blockSize*3) / 2
+    let start_y = (canvasHold.canvasHeight() - canvasHold.blockSize*2) / 2
+    canvasHold.context.fillRect(start_x + canvasHold.blockSize, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x + canvasHold.blockSize*2, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x, start_y+canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x + canvasHold.blockSize, start_y+canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeStyle = '#000';
+    canvasHold.context.strokeRect(start_x + canvasHold.blockSize, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x + canvasHold.blockSize*2, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x, start_y+canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x + canvasHold.blockSize, start_y+canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
 
   } else if (tetro_type === "Z") {
-    hold_context.fillStyle = colors[7];
-    let start_x = (hold_canvas.width - hold_block_size*3) / 2
-    let start_y = (hold_canvas.height - hold_block_size*2) / 2
-    hold_context.fillRect(start_x, start_y, hold_block_size, hold_block_size);
-    hold_context.fillRect(start_x + hold_block_size, start_y, hold_block_size, hold_block_size);
-    hold_context.fillRect(start_x + hold_block_size, start_y+hold_block_size, hold_block_size, hold_block_size);
-    hold_context.fillRect(start_x + hold_block_size*2, start_y+hold_block_size, hold_block_size, hold_block_size);
-    hold_context.strokeStyle = '#000';
-    hold_context.strokeRect(start_x, start_y, hold_block_size, hold_block_size);
-    hold_context.strokeRect(start_x + hold_block_size, start_y, hold_block_size, hold_block_size);
-    hold_context.strokeRect(start_x + hold_block_size, start_y+hold_block_size, hold_block_size, hold_block_size);
-    hold_context.strokeRect(start_x + hold_block_size*2, start_y+hold_block_size, hold_block_size, hold_block_size);
+    canvasHold.context.fillStyle = colors[7];
+    let start_x = (canvasHold.canvasWidth() - canvasHold.blockSize*3) / 2
+    let start_y = (canvasHold.canvasHeight() - canvasHold.blockSize*2) / 2
+    canvasHold.context.fillRect(start_x, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x + canvasHold.blockSize, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x + canvasHold.blockSize, start_y+canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x + canvasHold.blockSize*2, start_y+canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeStyle = '#000';
+    canvasHold.context.strokeRect(start_x, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x + canvasHold.blockSize, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x + canvasHold.blockSize, start_y+canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x + canvasHold.blockSize*2, start_y+canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
   }
 }
 function player_reset_after_hold() {
