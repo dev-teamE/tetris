@@ -85,3 +85,21 @@ body {
 #followingPieces {
     border: 1px solid #fff;
 }
+
+/* スコアボードのスタイルを更新 */
+#scoreBoard {
+    color: #fff;
+    font-size: 20px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.stats-row {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 2px 0;
+}
