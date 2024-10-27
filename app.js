@@ -3,7 +3,7 @@ import { load_sounds, pause_bgm, play_bgm, play_sounds } from "./audio.js";
 // グローバル変数の定義
 let screen, imgJ, imgS, imgI, imgL, imgT, imgZ, imgO, imgs;
 let bgm_sound, drop_sound, hold_sound, clear_sound, move_sound, rotate_sound;
-let new_tetro,field_row,field_col,current_tetro_size
+let new_tetro,field_row,field_col,current_tetro_size, dropInterval
 
 
 
@@ -809,7 +809,6 @@ document.addEventListener('keydown', (event) => {
 function arenaSweep() {
   // 消した行数をカウントする変数
   let linesCleared = 0;
-  let combo = 0;
   let perfectClear = true;
 
   // 外側のループ（y軸方向）の設定：配列の一番下から上まで、1行ずつ確認
@@ -828,7 +827,7 @@ function arenaSweep() {
       arena.unshift(row); // 0で埋めた行rowを、unshiftで一番上（配列の先頭）に追加
       ++y; // 行を削除したことで落ちてきた分の行もチェックするため
       ++linesCleared; // スコア計算に使用するため、消した行数をカウントする
-      ++combo;
+      ++playercombo;
   }
 
   if (linesCleared > 0) {
@@ -896,7 +895,7 @@ function arenaSweep() {
     
     // 統計の更新
     player.totalLines += linesCleared;
-    player.maxCombo = Math.max(player.maxCombo || 0, combo);
+    player.maxCombo = Math.max(player.maxCombo || 0, player.combo);
     
     // レベルとUI更新
     checkLevelUp();
@@ -904,7 +903,7 @@ function arenaSweep() {
     play_sounds(clear_sound);
     } else {
     // playerDropでarenaSweepが呼ばれた際、消去できる行がなければコンボリセット
-    combo = 0;
+    player.combo = 0;
   }
 }
 
@@ -1045,10 +1044,10 @@ function restartGame() {
   player.totalLines = 0;
   // レベルをリセット
   player.level = 1;
-  combo = 0;
-  maxCombo = 0;
-  lastClearWasTetris = false;
-  backToBackActive = false;
+  player.combo = 0;
+  player.maxCombo = 0;
+  player.lastClearWasTetris = false;
+  player.backToBackActive = false;
   // 落下速度をリセット
   dropInterval = calculateDropInterval(player.level);
   // ホールドしているテトロミノをリセット
