@@ -714,14 +714,8 @@ function merge(arena, player) {
 let currentTime;
 let lastTime = 0;
 
-/*
-// あとで難易度によって変更する必要がありそう
-let dropInterval = 1000;
-*/
-
 // ゲームを停止するために使うアニメーションフレームID
 let animationId;
-
 
 function playerDrop(){
 
@@ -729,13 +723,12 @@ function playerDrop(){
 
   if(collide(arena, player)){
     player.pos.y--;
-    // ghostTetrimono()
+    arenaSweep()
     merge(arena, player)
     if (!playerReset()) {
       // playerResetがfalseを返した場合（ゲームオーバー時）、ここで処理を終了
       return;
     }
-    arenaSweep()
     updateScore()
     player.hold_used = false;
   }
@@ -752,14 +745,17 @@ function ghostTetrimono() {
 function playerHardDrop() {
   while (player.pos.y < ghost.pos.y) player.pos.y++
   merge(arena,player)
+  draw()
+  arenaSweep()
   if (!playerReset()) {
     // playerResetがfalseを返した場合（ゲームオーバー時）、ここで処理を終了
     return;
   }
-  arenaSweep()
+  // arenaSweep()
   updateScore()
   player.hold_used = false;
   currentTime = 0
+  
 }
 
 
@@ -827,7 +823,7 @@ function arenaSweep() {
       arena.unshift(row); // 0で埋めた行rowを、unshiftで一番上（配列の先頭）に追加
       ++y; // 行を削除したことで落ちてきた分の行もチェックするため
       ++linesCleared; // スコア計算に使用するため、消した行数をカウントする
-      ++playercombo;
+      ++player.combo;
   }
 
   if (linesCleared > 0) {
