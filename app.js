@@ -401,6 +401,10 @@ const player = {
   score : 0,
   totalLines: 0,
   level: 1,
+  combo: 0,
+  maxCombo: 0,
+  lastClearWasTetris: false,
+  backToBackActive: false,
 };
 
 const ghost = {
@@ -569,8 +573,11 @@ function merge(arena, player) {
 }
 
 let lastTime = 0;
+
+/*
 // あとで難易度によって変更する必要がありそう
 let dropInterval = 1000;
+*/
 
 // ゲームを停止するために使うアニメーションフレームID
 let animationId;
@@ -659,6 +666,8 @@ document.addEventListener('keydown', (event) => {
 function arenaSweep() {
   // 消した行数をカウントする変数
   let linesCleared = 0;
+  let combo = 0;
+  let perfectClear = true;
 
   // 外側のループ（y軸方向）の設定：配列の一番下から上まで、1行ずつ確認
   outer: for (let y = arena.length - 1; y >= 0; --y) { // 内側のループを効率的に抜け出すため、ラベル付きループを使用
@@ -676,14 +685,82 @@ function arenaSweep() {
       arena.unshift(row); // 0で埋めた行rowを、unshiftで一番上（配列の先頭）に追加
       ++y; // 行を削除したことで落ちてきた分の行もチェックするため
       ++linesCleared; // スコア計算に使用するため、消した行数をカウントする
+      ++combo;
   }
 
   if (linesCleared > 0) {
+    // ライン消去後にパーフェクトクリア判定
+    let perfectClear = true;
+    // フィールド全体をチェック
+    checkPerfect: for (let y = 0; y < arena.length; y++) {
+        for (let x = 0; x < arena[y].length; x++) {
+            if (arena[y][x] !== 0) {
+                perfectClear = false;
+                break checkPerfect;
+            }
+        }
+    }
+
+    // 基本スコア計算
+    const baseScores = {
+      1: 100,
+      2: 300,
+      3: 500,
+      4: 800
+    };
+
+    // パーフェクトクリア時の特別スコア
+    const perfectClearScores = {
+      1: 900,
+      2: 1500,
+      3: 2300,
+      4: 2800
+    };
+
+    // Back to Back状態の更新
+    if (linesCleared === 4) {
+        if (!player.lastClearWasTetris) {
+            player.lastClearWasTetris = true;
+            player.backToBackActive = false;
+        } else {
+            player.backToBackActive = true;
+        }
+    } else {
+        player.lastClearWasTetris = false;
+        player.backToBackActive = false;
+    }
+    
+    // コンボボーナス計算（連続でライン消しした場合）
+    player.combo = (player.combo || 0) + 1;  // 連続クリア回数をカウント
+    const comboBonus = player.combo > 1 ? Math.floor(50 * (player.combo - 1)) : 0;
+
+    // スコア計算
+    let lineScore;
+    if (perfectClear) {
+        lineScore = perfectClearScores[linesCleared];
+        if (linesCleared === 4 && player.backToBackActive) {
+            lineScore = Math.floor(lineScore * 1.5);
+        }
+    } else {
+        lineScore = baseScores[linesCleared];
+        if (linesCleared === 4 && player.backToBackActive) {
+            lineScore = Math.floor(lineScore * 1.5);
+        }
+    }
+
+    // 最終スコア加算
+    player.score += lineScore + comboBonus;
+    
+    // 統計の更新
     player.totalLines += linesCleared;
-    const scores = [0, 100, 300, 500, 800];
-    player.score += scores[linesCleared] * player.level;
+    player.maxCombo = Math.max(player.maxCombo || 0, combo);
+    
+    // レベルとUI更新
     checkLevelUp();
     updateScore();
+  } else {
+    // playerDropでarenaSweepが呼ばれた際、消去できる行がなければコンボリセット
+    combo = 0;
   }
 }
 
@@ -697,14 +774,7 @@ function updateScore() {
   document.querySelector('#lines').innerText = player.totalLines;
 }
 
-// ベースの落下速度（ms）とレベルごとの速度減少率を定義
-const BASE_DROP_INTERVAL = 1000;  // 1秒
-const SPEED_INCREASE_RATE = 0.85; // 各レベルで85%の速度に
-
-// 現在のレベルに基づいて落下間隔を計算する関数
-function calculateDropInterval(level) {
-  return BASE_DROP_INTERVAL * Math.pow(SPEED_INCREASE_RATE, level - 1);
-}
+const baseSpeed = 1000; // 基準速度: 1秒 = 1000ミリ秒
 
 // レベルアップの条件をチェックし、必要に応じてレベルアップする関数
 function checkLevelUp() {
@@ -716,6 +786,20 @@ function checkLevelUp() {
     // レベルアップ表示を更新
     updateLevel();
   }
+}
+
+function calculateDropInterval(level) {
+  // レベルが1の場合は基準速度を返す
+  if (level < 1) {
+      return baseSpeed;
+  }
+  
+  const base = 0.8 - ((level - 1) * 0.007);
+  const power = level - 1;
+  const speedMultiplier = Math.pow(base, power);
+  
+  // 最小速度（7ミリ秒）を下回らないようにする
+  return Math.max(baseSpeed * speedMultiplier, 7);
 }
 
 // レベル表示を更新する関数
@@ -816,13 +900,18 @@ function restartGame() {
   player.totalLines = 0;
   // レベルをリセット
   player.level = 1;
+  combo = 0;
+  maxCombo = 0;
+  lastClearWasTetris = false;
+  backToBackActive = false;
   // 落下速度をリセット
   dropInterval = calculateDropInterval(player.level);
   // ホールドしているテトロミノをリセット
   player.hold_tetro_type = null;
   clear_hold_field();
-  // スコア表示を更新
+  // スコアとレベル表示を更新
   updateScore();
+  updateLevel();
   // ピースをシャッフルし直す
   nextPieces = shuffle([...tetrominoes])
   // プレイヤーのピースをリセット
@@ -845,6 +934,11 @@ function update() {
 
     if (currentTime - lastTime >= dropInterval) {
       playerDrop();
+
+      if (collide(arena, player)) {
+        return;
+      }
+
       lastTime = currentTime;
     }
     draw() 
