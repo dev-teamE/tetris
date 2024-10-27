@@ -768,6 +768,7 @@ function playerHardDrop() {
   }
   arenaSweep()
   updateScore()
+  player.hold_used = false;
   currentTime = 0
 }
 
