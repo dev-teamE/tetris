@@ -11,8 +11,6 @@ const canvas = document.querySelector("#tetris");
 const context = canvas.getContext("2d");
 context.scale(20,20);
 
-
-// 以下hold機能に関する変数、関数
 // ホールドエリアのcanvasの値を定義するクラス
 class CanvasHold {
   constructor(canvasId, blockSize, row, col) {
@@ -35,18 +33,10 @@ class CanvasHold {
     }
 
 }
-const canvasHold = new CanvasHold("hold_canvas", 20, 5, 5);
-
-// ホールドフィールドサイズ
-
 
 function draw_hold_field(tetro_type){ // ホールドフィールドを描画する関数
   clear_hold_field();
   draw_hold_tetro(tetro_type); // ホールドしたテトロミノを描画する
-  // 外側の枠線を描画する　→ 動作しないのでcssで記述
-  // canvasHold.context.strokeStyle = "rgb(45, 46, 131)";
-  // canvasHold.context.lineWidth = 10;
-  // canvasHold.context.strokeRect(0, 2.5, canvasHold.canvasWidth(, canvasHold.canvasHeight());
 }
 function clear_hold_field(){// 現在ホールドフィールドに表示されているテトロミノを削除する
     // 盤面を一度削除する
@@ -65,21 +55,21 @@ function draw_hold_tetro(tetro_type){
   if (tetro_type === "T") {
     let start_x = (canvasHold.canvasWidth() - canvasHold.blockSize*3) / 2
     let start_y = (canvasHold.canvasHeight() - canvasHold.blockSize*2) / 2
-    canvasHold.context.fillStyle = colors[1];
-    canvasHold.context.fillRect(start_x, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillStyle = "rgb(" + colors[1] + ")";
     canvasHold.context.fillRect(start_x + canvasHold.blockSize, start_y, canvasHold.blockSize, canvasHold.blockSize);
-    canvasHold.context.fillRect(start_x + canvasHold.blockSize*2, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
     canvasHold.context.fillRect(start_x + canvasHold.blockSize, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x + canvasHold.blockSize*2, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
     canvasHold.context.strokeStyle = '#000';
-    canvasHold.context.strokeRect(start_x, start_y, canvasHold.blockSize, canvasHold.blockSize);
     canvasHold.context.strokeRect(start_x + canvasHold.blockSize, start_y, canvasHold.blockSize, canvasHold.blockSize);
-    canvasHold.context.strokeRect(start_x + canvasHold.blockSize*2, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
     canvasHold.context.strokeRect(start_x + canvasHold.blockSize, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x + canvasHold.blockSize*2, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
 
   } else if (tetro_type === "O") {
     let start_x = (canvasHold.canvasWidth() - canvasHold.blockSize*2) / 2
     let start_y = (canvasHold.canvasHeight() - canvasHold.blockSize*2) / 2
-    canvasHold.context.fillStyle = colors[2];
+    canvasHold.context.fillStyle = "rgb(" + colors[2] + ")";
     canvasHold.context.fillRect(start_x, start_y, canvasHold.blockSize, canvasHold.blockSize);
     canvasHold.context.fillRect(start_x + canvasHold.blockSize, start_y, canvasHold.blockSize, canvasHold.blockSize);
     canvasHold.context.fillRect(start_x, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
@@ -91,51 +81,51 @@ function draw_hold_tetro(tetro_type){
     canvasHold.context.strokeRect(start_x + canvasHold.blockSize, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
 
   } else if (tetro_type === "L") {
-    let start_x = (canvasHold.canvasWidth() - canvasHold.blockSize*2) / 2
-    let start_y = (canvasHold.canvasHeight() - canvasHold.blockSize*3) / 2
-    canvasHold.context.fillStyle = colors[3];
+    let start_x = (canvasHold.canvasWidth() - canvasHold.blockSize*3) / 2
+    let start_y = (canvasHold.canvasHeight() - canvasHold.blockSize*2) / 2
+    canvasHold.context.fillStyle = "rgb(" + colors[3] + ")";
+    canvasHold.context.fillRect(start_x + canvasHold.blockSize*2, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x + canvasHold.blockSize, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x + canvasHold.blockSize*2, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeStyle = '#000';
+    canvasHold.context.strokeRect(start_x + canvasHold.blockSize*2, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x + canvasHold.blockSize, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x + canvasHold.blockSize*2, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
+
+  } else if (tetro_type === "J") {
+    let start_x = (canvasHold.canvasWidth() - canvasHold.blockSize*3) / 2
+    let start_y = (canvasHold.canvasHeight() - canvasHold.blockSize*2) / 2
+    canvasHold.context.fillStyle = "rgb(" + colors[4] + ")";
     canvasHold.context.fillRect(start_x, start_y, canvasHold.blockSize, canvasHold.blockSize);
     canvasHold.context.fillRect(start_x, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
-    canvasHold.context.fillRect(start_x, start_y + canvasHold.blockSize*2, canvasHold.blockSize, canvasHold.blockSize);
-    canvasHold.context.fillRect(start_x + canvasHold.blockSize, start_y + canvasHold.blockSize*2, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x + canvasHold.blockSize, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x + canvasHold.blockSize*2, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
     canvasHold.context.strokeStyle = '#000';
     canvasHold.context.strokeRect(start_x, start_y, canvasHold.blockSize, canvasHold.blockSize);
     canvasHold.context.strokeRect(start_x, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
-    canvasHold.context.strokeRect(start_x, start_y + canvasHold.blockSize*2, canvasHold.blockSize, canvasHold.blockSize);
-    canvasHold.context.strokeRect(start_x + canvasHold.blockSize, start_y + canvasHold.blockSize*2, canvasHold.blockSize, canvasHold.blockSize);
-
-  } else if (tetro_type === "J") {
-    let start_x = (canvasHold.canvasWidth() - canvasHold.blockSize*2) / 2
-    let start_y = (canvasHold.canvasHeight() - canvasHold.blockSize*3) / 2
-    canvasHold.context.fillStyle = colors[4];
-    canvasHold.context.fillRect(start_x + canvasHold.blockSize, start_y, canvasHold.blockSize, canvasHold.blockSize);
-    canvasHold.context.fillRect(start_x + canvasHold.blockSize, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
-    canvasHold.context.fillRect(start_x + canvasHold.blockSize, start_y + canvasHold.blockSize*2, canvasHold.blockSize, canvasHold.blockSize);
-    canvasHold.context.fillRect(start_x, start_y + canvasHold.blockSize*2, canvasHold.blockSize, canvasHold.blockSize);
-    canvasHold.context.strokeStyle = '#000';
-    canvasHold.context.strokeRect(start_x + canvasHold.blockSize, start_y, canvasHold.blockSize, canvasHold.blockSize);
     canvasHold.context.strokeRect(start_x + canvasHold.blockSize, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
-    canvasHold.context.strokeRect(start_x + canvasHold.blockSize, start_y + canvasHold.blockSize*2, canvasHold.blockSize, canvasHold.blockSize);
-    canvasHold.context.strokeRect(start_x, start_y + canvasHold.blockSize*2, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x + canvasHold.blockSize*2, start_y + canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
 
   } else if (tetro_type === "I") {
-    canvasHold.context.fillStyle = colors[5];
-    let start_x = (canvasHold.canvasWidth() - canvasHold.blockSize) / 2
-    let start_y = (canvasHold.canvasHeight() - canvasHold.blockSize*4) / 2
+    let start_x = (canvasHold.canvasWidth() - canvasHold.blockSize*4) / 2
+    let start_y = (canvasHold.canvasHeight() - canvasHold.blockSize) / 2
+    canvasHold.context.fillStyle = "rgb(" + colors[5] + ")";
     canvasHold.context.fillRect(start_x, start_y, canvasHold.blockSize, canvasHold.blockSize);
-    canvasHold.context.fillRect(start_x, start_y+canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
-    canvasHold.context.fillRect(start_x, start_y+canvasHold.blockSize*2, canvasHold.blockSize, canvasHold.blockSize);
-    canvasHold.context.fillRect(start_x, start_y+canvasHold.blockSize*3, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x + canvasHold.blockSize, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x + canvasHold.blockSize*2, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.fillRect(start_x + canvasHold.blockSize*3, start_y, canvasHold.blockSize, canvasHold.blockSize);
     canvasHold.context.strokeStyle = '#000';
     canvasHold.context.strokeRect(start_x, start_y, canvasHold.blockSize, canvasHold.blockSize);
-    canvasHold.context.strokeRect(start_x, start_y+canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
-    canvasHold.context.strokeRect(start_x, start_y+canvasHold.blockSize*2, canvasHold.blockSize, canvasHold.blockSize);
-    canvasHold.context.strokeRect(start_x, start_y+canvasHold.blockSize*3, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x + canvasHold.blockSize, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x + canvasHold.blockSize*2, start_y, canvasHold.blockSize, canvasHold.blockSize);
+    canvasHold.context.strokeRect(start_x + canvasHold.blockSize*3, start_y, canvasHold.blockSize, canvasHold.blockSize);
 
   } else if (tetro_type === "S") {
-    canvasHold.context.fillStyle = colors[6];
     let start_x = (canvasHold.canvasWidth() - canvasHold.blockSize*3) / 2
     let start_y = (canvasHold.canvasHeight() - canvasHold.blockSize*2) / 2
+    canvasHold.context.fillStyle = "rgb(" + colors[6] + ")";
     canvasHold.context.fillRect(start_x + canvasHold.blockSize, start_y, canvasHold.blockSize, canvasHold.blockSize);
     canvasHold.context.fillRect(start_x + canvasHold.blockSize*2, start_y, canvasHold.blockSize, canvasHold.blockSize);
     canvasHold.context.fillRect(start_x, start_y+canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
@@ -147,9 +137,9 @@ function draw_hold_tetro(tetro_type){
     canvasHold.context.strokeRect(start_x + canvasHold.blockSize, start_y+canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
 
   } else if (tetro_type === "Z") {
-    canvasHold.context.fillStyle = colors[7];
     let start_x = (canvasHold.canvasWidth() - canvasHold.blockSize*3) / 2
     let start_y = (canvasHold.canvasHeight() - canvasHold.blockSize*2) / 2
+    canvasHold.context.fillStyle = "rgb(" + colors[7] + ")";
     canvasHold.context.fillRect(start_x, start_y, canvasHold.blockSize, canvasHold.blockSize);
     canvasHold.context.fillRect(start_x + canvasHold.blockSize, start_y, canvasHold.blockSize, canvasHold.blockSize);
     canvasHold.context.fillRect(start_x + canvasHold.blockSize, start_y+canvasHold.blockSize, canvasHold.blockSize, canvasHold.blockSize);
@@ -167,10 +157,12 @@ function player_reset_after_hold() {
     let temp = player.current_tetro_type;
     player.current_tetro_type = player.hold_tetro_type;
     player.hold_tetro_type = temp;
+    player.rotation = 0;
     player.matrix = createPiece(player.current_tetro_type);
-    player.pos.y = 0;
     // 位置を真ん中にする
+    player.pos.y = 0;
     player.pos.x = (arena[0].length/2 | 0 ) - (player.matrix[0].length /2 | 0)
+    ghostTetrimono()
     draw_hold_field(player.hold_tetro_type);
     drawNextPieces();
     // // ゲームオーバー
@@ -180,7 +172,7 @@ function player_reset_after_hold() {
         return false; // ゲームオーバーを示すfalseを返す
     }
     return true; // 正常にリセットされたことを示すtrueを返す
-  }else{// １回目のホールド時の処理
+  }else {// １回目のホールド時の処理
     player.hold_used = true;
     player.hold_tetro_type = player.current_tetro_type;
     playerReset();
@@ -188,22 +180,187 @@ function player_reset_after_hold() {
   }
   play_sounds(hold_sound)
   }
+function updateRotationAxis() { // プレイヤーに保存している現在の表示しているテトロミノ回転軸を更新する
+  if (player.rotation == 3) {
+    player.rotation = 0;
+  } else {
+    player.rotation += 1;
+  }
+}
+
+
+function clockwisSrs(tetroType) { // SRSの判定処理
+  const rotatedTetro = rotate(player.matrix)// 回転後のテトリミノの描画情報
+  let xPos = player.pos.x
+  let yPos = player.pos.y
+  // SRSは現在の描画しているテトロミノが”I”と”I以外”で処理が異なる
+  // テトロミノの回転軸によって処理が異なる
+  if (tetroType == "I") {
+    if (player.rotation == 0) {
+      if (collision_on_rotate(xPos - 2, yPos, rotatedTetro)) {
+        player.pos.x = xPos - 2
+        player.pos.y = yPos
+      } else if (collision_on_rotate(xPos + 1, yPos, rotatedTetro)){
+        player.pos.x = xPos + 1
+        player.pos.y = yPos
+      } else if (collision_on_rotate(xPos - 2, yPos + 1, rotatedTetro)) {
+        player.pos.x = xPos - 2
+        player.pos.y = yPos + 1
+      } else if (collision_on_rotate(xPos + 1, yPos - 2, rotatedTetro)) {
+        player.pos.x = xPos + 1
+        player.pos.y = yPos - 2
+      } else {
+        return ; // 全てFalseの場合は何も実行しない
+      }
+      player.matrix = rotatedTetro; // 判定がTrueの場合テトロミノを回転させる
+      updateRotationAxis(); // 回転軸を更新する
+    } else if (player.rotation == 1) {
+      if (collision_on_rotate(xPos - 1, yPos, rotatedTetro)) {
+        player.pos.x = xPos - 1
+        player.pos.y = yPos
+      } else if (collision_on_rotate(xPos + 2, yPos, rotatedTetro)){
+        player.pos.x = xPos + 2
+        player.pos.y = yPos
+      } else if (collision_on_rotate(xPos - 1, yPos - 2, rotatedTetro)) {
+        player.pos.x = xPos - 1
+        player.pos.y = yPos - 2
+      } else if (collision_on_rotate(xPos + 2, yPos + 1, rotatedTetro)) {
+        player.pos.x = xPos + 2
+        player.pos.y = yPos + 1
+      } else {
+        return ; // 全てFalseの場合は何も実行しない
+      }
+      player.matrix = rotatedTetro; // 判定がTrueの場合テトロミノを回転させる
+      updateRotationAxis(); // 回転軸を更新する
+    } else if (player.rotation == 2) {
+      if (collision_on_rotate(xPos + 2, yPos, rotatedTetro)) {
+        player.pos.x = xPos + 2
+        player.pos.y = yPos
+      } else if (collision_on_rotate(xPos - 1, yPos, rotatedTetro)){
+        player.pos.x = xPos - 1
+        player.pos.y = yPos
+      } else if (collision_on_rotate(xPos + 2, yPos - 1, rotatedTetro)) {
+        player.pos.x = xPos + 2
+        player.pos.y = yPos - 1
+      } else if (collision_on_rotate(xPos - 1, yPos + 2, rotatedTetro)) {
+        player.pos.x = xPos - 1
+        player.pos.y = yPos + 2
+      } else {
+        return ; // 全てFalseの場合は何も実行しない
+      }
+      player.matrix = rotatedTetro; // 判定がTrueの場合テトロミノを回転させる
+      updateRotationAxis(); // 回転軸を更新する
+    } else if (player.rotation == 3) {
+      if (collision_on_rotate(xPos - 2, yPos, rotatedTetro)) {
+        player.pos.x = xPos - 2
+        player.pos.y = yPos
+      } else if (collision_on_rotate(xPos + 1, yPos, rotatedTetro)){
+        player.pos.x = xPos + 1
+        player.pos.y = yPos
+      } else if (collision_on_rotate(xPos + 1, yPos + 2, rotatedTetro)) {
+        player.pos.x = xPos + 1
+        player.pos.y = yPos + 2
+      } else if (collision_on_rotate(xPos - 2, yPos - 1, rotatedTetro)) {
+        player.pos.x = xPos - 2
+        player.pos.y = yPos - 1
+      } else {
+        return ; // 全てFalseの場合は何も実行しない
+      }
+      player.matrix = rotatedTetro; // 判定がTrueの場合テトロミノを回転させる
+      updateRotationAxis(); // 回転軸を更新する
+    }
+  } else {
+    if (player.rotation == 0) {
+      if (collision_on_rotate(xPos - 1, yPos, rotatedTetro)) {
+        player.pos.x = xPos - 1
+        player.pos.y = yPos
+      } else if (collision_on_rotate(xPos - 1, yPos - 1, rotatedTetro)){
+        player.pos.x = xPos - 1
+        player.pos.y = yPos - 1
+      } else if (collision_on_rotate(xPos, yPos - 2, rotatedTetro)) {
+        player.pos.x = xPos
+        player.pos.y = yPos - 2
+      } else if (collision_on_rotate(xPos - 1, yPos - 2, rotatedTetro)) {
+        player.pos.x = xPos - 1
+        player.pos.y = yPos - 2
+      } else {
+        return ; // 全てFalseの場合は何も実行しない
+      }
+      player.matrix = rotatedTetro; // 判定がTrueの場合テトロミノを回転させる
+      updateRotationAxis(); // 回転軸を更新する
+    } else if (player.rotation == 1) {
+      if (collision_on_rotate(xPos + 1, yPos, rotatedTetro)) {
+        player.pos.x = xPos + 1
+        player.pos.y = yPos
+      } else if (collision_on_rotate(xPos + 1, yPos - 1, rotatedTetro)){
+        player.pos.x = xPos + 1
+        player.pos.y = yPos - 1
+      } else if (collision_on_rotate(xPos, yPos - 2, rotatedTetro)) {
+        player.pos.x = xPos
+        player.pos.y = yPos - 2
+      } else if (collision_on_rotate(xPos + 1, yPos - 2, rotatedTetro)) {
+        player.pos.x = xPos + 1
+        player.pos.y = yPos - 2
+      } else {
+        return ;
+      }
+      player.matrix = rotatedTetro; // 判定がTrueの場合テトロミノを回転させる
+      updateRotationAxis(); // 回転軸を更新する
+    } else if (player.rotation == 2) {
+      if (collision_on_rotate(xPos + 1, yPos, rotatedTetro)) {
+        player.pos.x = xPos + 1
+        player.pos.y = yPos
+      } else if (collision_on_rotate(xPos + 1, yPos + 1, rotatedTetro)){
+        player.pos.x = xPos + 1
+        player.pos.y = yPos + 1
+      } else if (collision_on_rotate(xPos, yPos - 2, rotatedTetro)) {
+        player.pos.x = xPos
+        player.pos.y = yPos - 2
+      } else if (collision_on_rotate(xPos + 1, yPos - 2, rotatedTetro)) {
+        player.pos.x = xPos + 1
+        player.pos.y = yPos - 2
+      } else {
+        return ; // 全てFalseの場合は何も実行しない
+      }
+      player.matrix = rotatedTetro; // 判定がTrueの場合テトロミノを回転させる
+      updateRotationAxis(); // 回転軸を更新する
+    } else if (player.rotation == 3) {
+      if (collision_on_rotate(xPos - 1, yPos, rotatedTetro)) {
+        player.pos.x = xPos - 1
+        player.pos.y = yPos
+      } else if (collision_on_rotate(xPos - 1, yPos - 1, rotatedTetro)){
+        player.pos.x = xPos - 1
+        player.pos.y = yPos - 1
+      } else if (collision_on_rotate(xPos, yPos + 2, rotatedTetro)) {
+        player.pos.x = xPos
+        player.pos.y = yPos + 2
+      } else if (collision_on_rotate(xPos + 1, yPos + 2, rotatedTetro)) {
+        player.pos.x = xPos + 1
+        player.pos.y = yPos + 2
+      } else {
+        return ; // 全てFalseの場合は何も実行しない
+      }
+      player.matrix = rotatedTetro; // 判定がTrueの場合テトロミノを回転させる
+      updateRotationAxis(); // 回転軸を更新する
+    }
+  }
+}
 // テトリミノの回転時の他ブロックとの衝突判定を行う関数
 // true か　false を返す
 // 以下引数について
 // current_x: 現在の描画位置のx座標
 // current_y: 現在の描画位置のy座標
 // roteted_tetro: 回転後のテトリミノ描画(2次元配列)
-function collision_on_rotate(current_x, current_y,rotated_tetro){
-  field_row = arena.length; // プレイフィールドの行数
-  field_col = arena[0].length; // プレイフィールドの列数
-  current_tetro_size = rotated_tetro.length; // テトロミノの描画サイズ
+function collision_on_rotate(current_x, current_y, rotated_tetro){
+  let field_row = arena.length; // プレイフィールドの行数
+  let field_col = arena[0].length; // プレイフィールドの列数
+  let current_tetro_size = rotated_tetro.length; // テトロミノの描画サイズ
   for (let y=0; y<current_tetro_size; y++){
       for (let x=0; x<current_tetro_size; x++){
           if(rotated_tetro[y][x] !=0 ){
               // 回転後のテトリミノの現在地から描画位置
-              let rotated_x = player.pos.x + x;
-              let rotated_y = player.pos.y + y;
+              let rotated_x = current_x + x;
+              let rotated_y = current_y + y;
 
               // 回転後のテトリミノが一つでも描画できない位置にある場合falseを返す
               if( rotated_y < 0 || // 描画位置がフィールドの範囲外になる場合
@@ -278,8 +435,8 @@ const createPiece = (type) => {
         ];
     } else if (type === "I") {
         return [
-          [5, 5, 5, 5],
           [0, 0, 0, 0],
+          [5, 5, 5, 5],
           [0, 0, 0, 0],
           [0, 0, 0, 0],
         ];
@@ -301,13 +458,13 @@ const createPiece = (type) => {
 // ピースの色を定義
 const colors = [
     null,
-    [210, 66, 255, 1] ,
-    [255, 229, 1, 1] ,
-    [255, 165, 63, 1] ,
-    [15, 75, 215, 1] ,
-    [112, 226, 254, 1] ,
-    [57, 231, 95, 1] ,
-    [220, 0, 0, 1] ,
+    [210, 66, 255] ,
+    [255, 229, 1] ,
+    [255, 165, 63] ,
+    [15, 75, 215] ,
+    [112, 226, 254] ,
+    [57, 231, 95] ,
+    [220, 0, 0] ,
   ];
 
 /**
@@ -349,26 +506,7 @@ const drawMatrix =  (matrix, offset, imgs) => {
     });
   }
 
-// ピースを描写する
-// const drawMatrix = (matrix, offset) => {
-
-//   // 線の幅を設定（スケールの逆数）
-//   context.lineWidth = 1 / 20;
-
-//   matrix.forEach((row, y) => {
-//     row.forEach((value, x) => {
-//       if (value !== 0){
-//         context.fillStyle = "rgba(" + colors[value] + ")";
-//         context.fillRect(x+offset.x, y+offset.y, 1, 1);
-
-//         // 線を描画
-//         context.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-//         context.strokeRect(x + offset.x, y + offset.y, 1, 1);
-//       }
-//     });
-//   });
-// }
-
+        
 const drawGhostMatrix = (matrix, offset) => {
 
   // 線の幅を設定（スケールの逆数）
@@ -392,12 +530,17 @@ const arena = Array.from({ length: 20 }, () => Array(10).fill(0));
 const player = {
   pos: {x: 0, y: 0},
   current_tetro_type: null, // プレイヤー情報として現在のテトロミノの形の情報を持つように修正
+  rotation: 0, // 現在のミノの回転状況
   hold_tetro_type: null,
   hold_used: false, // １回の落下中にホールド機能を利用したかどうかの状態
   matrix: null,
   score : 0,
   totalLines: 0,
   level: 1,
+  combo: 0,
+  maxCombo: 0,
+  lastClearWasTetris: false,
+  backToBackActive: false,
 };
 
 const ghost = {
@@ -406,8 +549,9 @@ const ghost = {
 }
 
 function playerReset() {
-  player.current_tetro_type = getNextTetromino(); // 板垣修正
-  player.matrix = createPiece(player.current_tetro_type);// 板垣修正
+  player.current_tetro_type = getNextTetromino(); 
+  player.matrix = createPiece(player.current_tetro_type);
+  player.rotation = 0; // ミノの回転軸を０に戻す
   player.pos.y = 0;
   player.pos.x = (arena[0].length/2 | 0 ) - (player.matrix[0].length /2 | 0);
 
@@ -524,7 +668,7 @@ function drawPiece(ctx, piece, startX, startY, blockSize) {
   piece.forEach((row, y) => {
     row.forEach((value, x) => {
       if (value !== 0) {
-        ctx.fillStyle = "rgba(" + colors[value] + ")";
+        ctx.fillStyle = "rgb(" + colors[value] + ")";
         ctx.fillRect(startX + x * blockSize, startY + y * blockSize, blockSize, blockSize);
         ctx.strokeStyle = '#000';
         ctx.strokeRect(startX + x * blockSize, startY + y * blockSize, blockSize, blockSize);
@@ -569,8 +713,11 @@ function merge(arena, player) {
 
 let currentTime;
 let lastTime = 0;
+
+/*
 // あとで難易度によって変更する必要がありそう
 let dropInterval = 1000;
+*/
 
 // ゲームを停止するために使うアニメーションフレームID
 let animationId;
@@ -609,9 +756,10 @@ function playerHardDrop() {
     // playerResetがfalseを返した場合（ゲームオーバー時）、ここで処理を終了
     return;
   }
-  currentTime = 0;
-  arenaSweep();
-  updateScore();
+  arenaSweep()
+  updateScore()
+  player.hold_used = false;
+  currentTime = 0
 }
 
 
@@ -631,12 +779,14 @@ document.addEventListener('keydown', (event) => {
     case 'ArrowUp':
       playerHardDrop();
       break;
-    // 板垣追記
     case ' ': // スペースを押した時の処理
-      new_tetro = rotate(player.matrix)// 回転後のテトリミノの描画情報new_tetro
+      let new_tetro = rotate(player.matrix)// 回転後のテトリミノの描画情報new_tetro
       // 回転後のテトリミノの描画位置が他のミノの衝突しない場合のみ、現在のテトロミノの描画を変更する
       if(collision_on_rotate(player.pos.x, player.pos.y, new_tetro)){
         player.matrix = new_tetro;
+        updateRotationAxis();
+      } else { // 通常の動作で回転できない時SRSで判定する
+        clockwisSrs(player.current_tetro_type); 
       }
       ghostTetrimono()
       break;
@@ -659,6 +809,8 @@ document.addEventListener('keydown', (event) => {
 function arenaSweep() {
   // 消した行数をカウントする変数
   let linesCleared = 0;
+  let combo = 0;
+  let perfectClear = true;
 
   // 外側のループ（y軸方向）の設定：配列の一番下から上まで、1行ずつ確認
   outer: for (let y = arena.length - 1; y >= 0; --y) { // 内側のループを効率的に抜け出すため、ラベル付きループを使用
@@ -676,15 +828,83 @@ function arenaSweep() {
       arena.unshift(row); // 0で埋めた行rowを、unshiftで一番上（配列の先頭）に追加
       ++y; // 行を削除したことで落ちてきた分の行もチェックするため
       ++linesCleared; // スコア計算に使用するため、消した行数をカウントする
+      ++combo;
   }
 
   if (linesCleared > 0) {
+    // ライン消去後にパーフェクトクリア判定
+    let perfectClear = true;
+    // フィールド全体をチェック
+    checkPerfect: for (let y = 0; y < arena.length; y++) {
+        for (let x = 0; x < arena[y].length; x++) {
+            if (arena[y][x] !== 0) {
+                perfectClear = false;
+                break checkPerfect;
+            }
+        }
+    }
+
+    // 基本スコア計算
+    const baseScores = {
+      1: 100,
+      2: 300,
+      3: 500,
+      4: 800
+    };
+
+    // パーフェクトクリア時の特別スコア
+    const perfectClearScores = {
+      1: 900,
+      2: 1500,
+      3: 2300,
+      4: 2800
+    };
+
+    // Back to Back状態の更新
+    if (linesCleared === 4) {
+        if (!player.lastClearWasTetris) {
+            player.lastClearWasTetris = true;
+            player.backToBackActive = false;
+        } else {
+            player.backToBackActive = true;
+        }
+    } else {
+        player.lastClearWasTetris = false;
+        player.backToBackActive = false;
+    }
+    
+    // コンボボーナス計算（連続でライン消しした場合）
+    player.combo = (player.combo || 0) + 1;  // 連続クリア回数をカウント
+    const comboBonus = player.combo > 1 ? Math.floor(50 * (player.combo - 1)) : 0;
+
+    // スコア計算
+    let lineScore;
+    if (perfectClear) {
+        lineScore = perfectClearScores[linesCleared];
+        if (linesCleared === 4 && player.backToBackActive) {
+            lineScore = Math.floor(lineScore * 1.5);
+        }
+    } else {
+        lineScore = baseScores[linesCleared];
+        if (linesCleared === 4 && player.backToBackActive) {
+            lineScore = Math.floor(lineScore * 1.5);
+        }
+    }
+
+    // 最終スコア加算
+    player.score += lineScore + comboBonus;
+    
+    // 統計の更新
     player.totalLines += linesCleared;
-    const scores = [0, 100, 300, 500, 800];
-    player.score += scores[linesCleared] * player.level;
+    player.maxCombo = Math.max(player.maxCombo || 0, combo);
+    
+    // レベルとUI更新
     checkLevelUp();
     updateScore();
     play_sounds(clear_sound);
+    } else {
+    // playerDropでarenaSweepが呼ばれた際、消去できる行がなければコンボリセット
+    combo = 0;
   }
 }
 
@@ -698,14 +918,7 @@ function updateScore() {
   document.querySelector('#lines').innerText = player.totalLines;
 }
 
-// ベースの落下速度（ms）とレベルごとの速度減少率を定義
-const BASE_DROP_INTERVAL = 1000;  // 1秒
-const SPEED_INCREASE_RATE = 0.85; // 各レベルで85%の速度に
-
-// 現在のレベルに基づいて落下間隔を計算する関数
-function calculateDropInterval(level) {
-  return BASE_DROP_INTERVAL * Math.pow(SPEED_INCREASE_RATE, level - 1);
-}
+const baseSpeed = 1000; // 基準速度: 1秒 = 1000ミリ秒
 
 // レベルアップの条件をチェックし、必要に応じてレベルアップする関数
 function checkLevelUp() {
@@ -717,6 +930,20 @@ function checkLevelUp() {
     // レベルアップ表示を更新
     updateLevel();
   }
+}
+
+function calculateDropInterval(level) {
+  // レベルが1の場合は基準速度を返す
+  if (level < 1) {
+      return baseSpeed;
+  }
+  
+  const base = 0.8 - ((level - 1) * 0.007);
+  const power = level - 1;
+  const speedMultiplier = Math.pow(base, power);
+  
+  // 最小速度（7ミリ秒）を下回らないようにする
+  return Math.max(baseSpeed * speedMultiplier, 7);
 }
 
 // レベル表示を更新する関数
@@ -818,13 +1045,18 @@ function restartGame() {
   player.totalLines = 0;
   // レベルをリセット
   player.level = 1;
+  combo = 0;
+  maxCombo = 0;
+  lastClearWasTetris = false;
+  backToBackActive = false;
   // 落下速度をリセット
   dropInterval = calculateDropInterval(player.level);
   // ホールドしているテトロミノをリセット
   player.hold_tetro_type = null;
   clear_hold_field();
-  // スコア表示を更新
+  // スコアとレベル表示を更新
   updateScore();
+  updateLevel();
   // ピースをシャッフルし直す
   nextPieces = shuffle([...tetrominoes])
   // プレイヤーのピースをリセット
@@ -848,6 +1080,11 @@ function update() {
 
     if (currentTime - lastTime >= dropInterval) {
       playerDrop();
+
+      if (collide(arena, player)) {
+        return;
+      }
+
       lastTime = currentTime;
     }
     draw() 
@@ -916,4 +1153,6 @@ const loading = async () => {
   }
 }
 
+const canvasHold = new CanvasHold("hold_canvas", 20, 5, 5);
 loading();
+
