@@ -4,7 +4,7 @@ body {
     align-items: center;
     margin: 0;
     height: 100vh;
-    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(images/background-img.png);
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(./assets/images/background-img.png);
 }
 button { /* スタート、一時停止・再開、リスタートボタン共通の設定 */
     width: 120px;

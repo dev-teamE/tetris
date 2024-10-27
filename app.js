@@ -1,3 +1,12 @@
+import { load_sounds, pause_bgm, play_bgm, play_sounds } from "./audio.js";
+
+// グローバル変数の定義
+let screen, imgJ, imgS, imgI, imgL, imgT, imgZ, imgO, imgs;
+let bgm_sound, drop_sound, hold_sound, clear_sound, move_sound, rotate_sound;
+let new_tetro,field_row,field_col,current_tetro_size
+
+
+
 const canvas = document.querySelector("#tetris");
 const context = canvas.getContext("2d");
 context.scale(20,20);
@@ -177,6 +186,7 @@ function player_reset_after_hold() {
     playerReset();
     draw_hold_field(player.hold_tetro_type);
   }
+  play_sounds(hold_sound)
   }
 // テトリミノの回転時の他ブロックとの衝突判定を行う関数
 // true か　false を返す
@@ -224,6 +234,7 @@ function rotate(current_tetro){
           new_tetro[y][x] = current_tetro[current_tetro_size-x-1][y];
       }
   }
+  play_sounds(rotate_sound)
   return new_tetro;
 }
 
@@ -232,8 +243,9 @@ const draw = () => {
   context.fillRect(0,0, canvas.width, canvas.height);
 
   // 変更した盤面を映す
-  drawMatrix(arena, {x: 0, y: 0})
-  drawMatrix(player.matrix, player.pos)
+  drawScreen(screen)
+  drawMatrix(arena, {x: 0, y: 0},imgs)
+  drawMatrix(player.matrix, player.pos, imgs)
   drawGhostMatrix(ghost.matrix, ghost.pos)
   
 };
@@ -289,13 +301,13 @@ const createPiece = (type) => {
 // ピースの色を定義
 const colors = [
     null,
-    [255, 13, 114, 1] ,
-    [13, 194, 255, 1] ,
-    [13, 255, 114, 1] ,
-    [245, 56, 255, 1] ,
-    [255, 142, 13, 1] ,
-    [255, 225, 56, 1] ,
-    [56, 119, 255, 1] ,
+    [210, 66, 255, 1] ,
+    [255, 229, 1, 1] ,
+    [255, 165, 63, 1] ,
+    [15, 75, 215, 1] ,
+    [112, 226, 254, 1] ,
+    [57, 231, 95, 1] ,
+    [220, 0, 0, 1] ,
   ];
 
 /**
@@ -303,70 +315,59 @@ const colors = [
  * @param {object} offset - ピースの描画位置を指定するオブジェクト. xとyのプロパティを持つ
  */
 
-// //画像読込関数
-// async function load_image(path){
-//   const t_img = new Image();
-//   return new Promise(
-//       (resolve) => {
-//           t_img.onload = () => {
-//               resolve(t_img);
-//           }
-//           t_img.src = path;
-//       }
-//   )
-// }
+//画像読込関数
+async function load_image(path){
+  const t_img = new Image();
+  return new Promise(
+    (resolve) => {
+      t_img.onload = () => {
+        resolve(t_img);
+      }
+      t_img.src = path;
+    }
+  )
+};
 
 
-// const drawScreen = async (matrix, offset) => {
-//   try {
-//     let img = await load_image("assets/Board/Board.png")
-//     context.drawImage(img ,x+offset.x, y+offset.y,10, 20);
-//   } catch (error) {
-//     console.error(error); // エラーが発生した場合の処理
-//   }
-// };
+const drawScreen= (screen) => {
+  context.drawImage(screen ,0 , 0, 10, 20);
+};
 
-// const drawMatrix2 = async (matrix, offset) => {
-//   try {
-//     let img = await load_image("./assets/Single Blocks/Blue.png")
+const drawMatrix =  (matrix, offset, imgs) => {
 
-//     // 線の幅を設定（スケールの逆数）
-//     context.lineWidth = 1 / 20;
+    // 線の幅を設定（スケールの逆数）
+    context.lineWidth = 1 / 20;
 
-//     // matrixを描画
-//     matrix.forEach((row, y) => {
-//       row.forEach((value, x) => {
-//         if (value !== 0) {
-//           // パターンを使用して塗りつぶし
-//           context.drawImage(img ,x+offset.x, y+offset.y, 1, 1);
-//         }
-//       });
-//     });
-//   } catch (error) {
-//     console.error(error); // エラーが発生した場合の処理
-//   }
-// };
+    // matrixを描画
+    matrix.forEach((row, y) => {
+      row.forEach((value, x) => {
+        if (value !== 0) {
+          // パターンを使用して塗りつぶし
+          context.drawImage(imgs[value] ,x+offset.x, y+offset.y, 1, 1);
+        }
+      });
+    });
+  }
 
 // ピースを描写する
-const drawMatrix = (matrix, offset) => {
+// const drawMatrix = (matrix, offset) => {
 
-  // 線の幅を設定（スケールの逆数）
-  context.lineWidth = 1 / 20;
+//   // 線の幅を設定（スケールの逆数）
+//   context.lineWidth = 1 / 20;
 
-  matrix.forEach((row, y) => {
-    row.forEach((value, x) => {
-      if (value !== 0){
-        colors[value][3] = 1
-        context.fillStyle = "rgba(" + colors[value] + ")";
-        context.fillRect(x+offset.x, y+offset.y, 1, 1);
+//   matrix.forEach((row, y) => {
+//     row.forEach((value, x) => {
+//       if (value !== 0){
+//         context.fillStyle = "rgba(" + colors[value] + ")";
+//         context.fillRect(x+offset.x, y+offset.y, 1, 1);
 
-        // 線を描画
-        context.strokeStyle = 'rgba(255, 255, 255, 1)';
-        context.strokeRect(x + offset.x, y + offset.y, 1, 1);
-      }
-    });
-  });
-}
+//         // 線を描画
+//         context.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+//         context.strokeRect(x + offset.x, y + offset.y, 1, 1);
+//       }
+//     });
+//   });
+// }
 
 const drawGhostMatrix = (matrix, offset) => {
 
@@ -376,12 +377,8 @@ const drawGhostMatrix = (matrix, offset) => {
   matrix.forEach((row, y) => {
     row.forEach((value, x) => {
       if (value !== 0){
-        colors[value][3] = 0.3
-        context.fillStyle = "rgba(" + colors[value] + ")";
-        context.fillRect(x+offset.x, y+offset.y, 1, 1);
-
         // 線を描画
-        context.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+        context.strokeStyle = "rgba(" + colors[value] + ")";;
         context.strokeRect(x + offset.x, y + offset.y, 1, 1);
       }
     });
@@ -556,6 +553,7 @@ function playerMove(dir) {
     player.pos.x -= dir
   }
   ghostTetrimono()
+  play_sounds(move_sound)
 }
 
 function merge(arena, player) {
@@ -566,8 +564,10 @@ function merge(arena, player) {
       }
     })
   })
+  play_sounds(drop_sound)
 }
 
+let currentTime;
 let lastTime = 0;
 // あとで難易度によって変更する必要がありそう
 let dropInterval = 1000;
@@ -609,9 +609,9 @@ function playerHardDrop() {
     // playerResetがfalseを返した場合（ゲームオーバー時）、ここで処理を終了
     return;
   }
-  arenaSweep()
-  updateScore()
-  currentTime = 0
+  currentTime = 0;
+  arenaSweep();
+  updateScore();
 }
 
 
@@ -684,6 +684,7 @@ function arenaSweep() {
     player.score += scores[linesCleared] * player.level;
     checkLevelUp();
     updateScore();
+    play_sounds(clear_sound);
   }
 }
 
@@ -754,6 +755,7 @@ function gameStart() {
   document.getElementById('startButton').style.display = 'block'; // スタートボタンを表示
   drawGameStart(); // ゲームオーバー表示を描画
   context.restore()
+  play_sounds(bgm_sound)
 }
 
 // ミノがロックされ、新しいミノが表示された時点で呼び出して判定する。
@@ -836,6 +838,7 @@ function restartGame() {
   document.getElementById('startButton').style.display = 'none';
   // 一時停止・再開ボタンを表示する
   document.getElementById('pauseButton').style.display = 'block';
+  play_bgm(bgm_sound)
 }
 
 function update() {
@@ -852,7 +855,6 @@ function update() {
   animationId = requestAnimationFrame(update)
 }
 
-gameStart()
 
 // リスタートボタンがクリックされたときにrestartGame関数を実行
 document.getElementById('restartButton').addEventListener('click', restartGame);
@@ -871,10 +873,47 @@ function pauseGame(){
     gameActive = false;
     cancelAnimationFrame(animationId); // アニメーションフレームの停止
     document.getElementById("pauseButton").innerText = "Resume"; // ボタンのテキストを「Resume」に変更
+    pause_bgm(bgm_sound);
   } else {
     // ゲームを再開
     gameActive = true;
     update(); // ゲーム更新を再開
     document.getElementById("pauseButton").innerText = "Pause"; //  ボタンのテキストをPauseに戻す
+    play_bgm(bgm_sound);
   }
 }
+
+
+const loading = async () => {
+  try {
+    screen = await load_image("./assets/Board/Board.png");
+    imgJ = await load_image("./assets/Single Blocks/Blue.png");
+    imgS = await load_image("./assets/Single Blocks/Green.png");
+    imgI = await load_image("./assets/Single Blocks/LightBlue.png");
+    imgL = await load_image("./assets/Single Blocks/Orange.png");
+    imgT = await load_image("./assets/Single Blocks/Purple.png");
+    imgZ = await load_image("./assets/Single Blocks/Red.png");
+    imgO = await load_image("./assets/Single Blocks/Yellow.png");
+    imgs = [
+      null,
+      imgT,
+      imgO,
+      imgL,
+      imgJ,
+      imgI,
+      imgS,
+      imgZ
+    ]
+    bgm_sound = await load_sounds("bgm");
+    drop_sound = await load_sounds("drop");
+    hold_sound = await load_sounds("hold");
+    clear_sound = await load_sounds("clear");
+    move_sound = await load_sounds("move");
+    rotate_sound = await load_sounds("rotate");
+    gameStart();
+  } catch (err){
+    console.log(err);
+  }
+}
+
+loading();
