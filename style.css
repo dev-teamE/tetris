@@ -9,7 +9,7 @@ body {
 button { /* スタート、一時停止・再開、リスタートボタン共通の設定 */
     width: 120px;
     height: 50px;
-    margin-top: 250px;
+    margin-top: 160px;
     background: linear-gradient(to bottom, #00bfff, #007acc); /* 青いグラデーション */
     color: white;
     font-size: 20px;
@@ -155,7 +155,7 @@ button:active {
 }*/
 
 /* スコアボードのスタイルを更新 */
-#scoreBoard {
+/* #scoreBoard {
     color: #fff;
     font-size: 20px;
     margin-bottom: 10px;
@@ -163,11 +163,13 @@ button:active {
     flex-direction: column;
     align-items: center;
     gap: 5px;
-}
+} */
 
 .stats-row {
-    display: flex;
+    /* display: flex;
     justify-content: space-between;
     width: 100%;
-    padding: 2px 0;
+    padding: 2px 0; */
+    color: white;
+    margin-bottom: 0;
 }
