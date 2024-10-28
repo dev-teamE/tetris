@@ -9,34 +9,72 @@
 </head>
 
 <body>
-    <div class="container">
-        <div id="logo"><img src="./assets/images/Tetrislogo.png" alt="#" class="large-image"></div>
-        <div id="game-container">
-            <div class="area" id="hold-area">
-                <h3>Hold</h3>
-                <canvas class="box" id="hold_canvas"></canvas>
-                <h4 class="stats-row">Level: <span id="level">1</span></h4>
-                <h4 class="stats-row">Lines: <span id="lines">0</span></h4>
-                <button id="startButton">start</button>
-                <button id="pauseButton">Pause</button>
-                <button id="restartButton">Restart</button>
-            </div>
-            <div class="area" id="main-area">
-                <div id="scoreBoard">
-                    <h3>Score: <span id="score">0</span></h3>
-                </div>
-                <canvas class="box" id="tetris" width="200" height="400"></canvas>
-            </div>
-            <div class="area" id="next-area">
-                <h3>Next</h3>
-                <div id="nextPieces">
-                    <canvas class="box" id="nextPiece" width="100" height="100"></canvas>
-                    <canvas class="box" id="followingPieces" width="100" height="280"></canvas>
+    <!-- スタート画面 -->
+    <div class="startScreen" style="display:block">
+        <div class="startContainer">
+            <img class="logoImg" src="./assets/images/Tetrislogo.png" >
+            <div class="modeContainer">
+                <div class="startButtons">
+                    <button class="startButton">Play</button>
+                    <button class="selectButton">Select Mode</button>
+                </div>  
+                <div class="settingButtons">
+                    <button class="settingButton">Setting</button>
+                    <button class="howToButton">How To Play</button>   
                 </div>
             </div>
         </div>
-      </div>
+        <!-- スコア画面あったら？（ローカルにスコアを保存） -->
     </div>
+    <!-- ゲームモード選択画面 -->
+    <div class="startScreen" style="display:none">
+        <div class="startContainer">
+            <img class="logoImg" src="./assets/images/Tetrislogo.png" >
+            <div class="modeContainer">
+                <div class="startButtons">
+                    <button class="startButton">Play</button>
+                    <button class="selectButton">Select Mode</button>
+                </div>  
+                <div class="settingButtons">
+                    <button class="settingButton">Setting</button>
+                    <button class="howToButton">How To Play</button>   
+                </div>
+            </div>
+        </div>
+        <!-- スコア画面あったら？（ローカルにスコアを保存） -->
+    </div>
+    <!-- 設定画面 -->
+    <!--操作方法 -->
+    <!-- プレイ画面 -->
+    <!-- <div class="playScreen" style="display:block"> -->
+        <div class="container" style="display:none">
+            <img classsrc="./assets/images/Tetrislogo.png" alt="#" class="large-image">
+            <div id="game-container">
+                <div class="area" id="hold-area">
+                    <h3>Hold</h3>
+                    <canvas class="box" id="hold_canvas"></canvas>
+                    <h4 class="stats-row">Level: <span id="level">1</span></h4>
+                    <h4 class="stats-row">Lines: <span id="lines">0</span></h4>
+                    <button id="startButton">start</button>
+                    <button id="pauseButton">Pause</button>
+                    <button id="restartButton">Restart</button>
+                </div>
+                <div class="area" id="main-area">
+                    <div id="scoreBoard">
+                        <h3>Score: <span id="score">0</span></h3>
+                    </div>
+                    <canvas class="box" id="tetris" width="200" height="400"></canvas>
+                </div>
+                <div class="area" id="next-area">
+                    <h3>Next</h3>
+                    <div id="nextPieces">
+                        <canvas class="box" id="nextPiece" width="100" height="100"></canvas>
+                        <canvas class="box" id="followingPieces" width="100" height="280"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <!-- </div> -->
     <script src="./app.js" type ="module"></script>
 </body>
 </html>
