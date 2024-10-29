@@ -9,7 +9,7 @@ let new_tetro,field_row,field_col,current_tetro_size, dropInterval
 
 const canvas = document.querySelector("#tetris");
 const context = canvas.getContext("2d");
-context.scale(20,20);
+context.scale(25,25);
 
 // ホールドエリアのcanvasの値を定義するクラス
 class CanvasHold {
@@ -652,7 +652,7 @@ function drawNextPieces() {
   remainingPieces.forEach((pieceType, index) => {
       const piece = createPiece(pieceType);
       // x=30, y=startY + index * 55の位置に、サイズ12で描画
-      drawPiece(flwCtx, piece, 32, startY + index * 55, 12);
+      drawPiece(flwCtx, piece, 32, startY + index * 55, 18);
   });
 }
 
@@ -754,8 +754,7 @@ function playerHardDrop() {
   // arenaSweep()
   updateScore()
   player.hold_used = false;
-  currentTime = 0
-  
+  currentTime = 0;
 }
 
 
@@ -1148,6 +1147,6 @@ const loading = async () => {
   }
 }
 
-const canvasHold = new CanvasHold("hold_canvas", 20, 5, 5);
+const canvasHold = new CanvasHold("hold_canvas", 23, 5, 5);
 loading();
 
