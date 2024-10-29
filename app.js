@@ -159,6 +159,8 @@ function player_reset_after_hold() {
     player.hold_tetro_type = temp;
     player.rotation = 0;
     player.matrix = createPiece(player.current_tetro_type);
+    player.moveOrRotateCount = 1; 
+    player.isTouchingGround = false;
     // 位置を真ん中にする
     player.pos.y = 0;
     player.pos.x = (arena[0].length/2 | 0 ) - (player.matrix[0].length /2 | 0)
@@ -212,8 +214,7 @@ function clockwisSrs(tetroType) { // SRSの判定処理
       } else {
         return ; // 全てFalseの場合は何も実行しない
       }
-      player.matrix = rotatedTetro; // 判定がTrueの場合テトロミノを回転させる
-      updateRotationAxis(); // 回転軸を更新する
+      afterRotate(rotatedTetro);
     } else if (player.rotation == 1) {
       if (collision_on_rotate(xPos - 1, yPos, rotatedTetro)) {
         player.pos.x = xPos - 1
@@ -230,8 +231,7 @@ function clockwisSrs(tetroType) { // SRSの判定処理
       } else {
         return ; // 全てFalseの場合は何も実行しない
       }
-      player.matrix = rotatedTetro; // 判定がTrueの場合テトロミノを回転させる
-      updateRotationAxis(); // 回転軸を更新する
+      afterRotate(rotatedTetro);
     } else if (player.rotation == 2) {
       if (collision_on_rotate(xPos + 2, yPos, rotatedTetro)) {
         player.pos.x = xPos + 2
@@ -248,8 +248,7 @@ function clockwisSrs(tetroType) { // SRSの判定処理
       } else {
         return ; // 全てFalseの場合は何も実行しない
       }
-      player.matrix = rotatedTetro; // 判定がTrueの場合テトロミノを回転させる
-      updateRotationAxis(); // 回転軸を更新する
+      afterRotate(rotatedTetro);
     } else if (player.rotation == 3) {
       if (collision_on_rotate(xPos - 2, yPos, rotatedTetro)) {
         player.pos.x = xPos - 2
@@ -266,8 +265,7 @@ function clockwisSrs(tetroType) { // SRSの判定処理
       } else {
         return ; // 全てFalseの場合は何も実行しない
       }
-      player.matrix = rotatedTetro; // 判定がTrueの場合テトロミノを回転させる
-      updateRotationAxis(); // 回転軸を更新する
+      afterRotate(rotatedTetro);
     }
   } else {
     if (player.rotation == 0) {
@@ -286,8 +284,7 @@ function clockwisSrs(tetroType) { // SRSの判定処理
       } else {
         return ; // 全てFalseの場合は何も実行しない
       }
-      player.matrix = rotatedTetro; // 判定がTrueの場合テトロミノを回転させる
-      updateRotationAxis(); // 回転軸を更新する
+      afterRotate(rotatedTetro);
     } else if (player.rotation == 1) {
       if (collision_on_rotate(xPos + 1, yPos, rotatedTetro)) {
         player.pos.x = xPos + 1
@@ -304,8 +301,7 @@ function clockwisSrs(tetroType) { // SRSの判定処理
       } else {
         return ;
       }
-      player.matrix = rotatedTetro; // 判定がTrueの場合テトロミノを回転させる
-      updateRotationAxis(); // 回転軸を更新する
+      afterRotate(rotatedTetro);
     } else if (player.rotation == 2) {
       if (collision_on_rotate(xPos + 1, yPos, rotatedTetro)) {
         player.pos.x = xPos + 1
@@ -322,8 +318,7 @@ function clockwisSrs(tetroType) { // SRSの判定処理
       } else {
         return ; // 全てFalseの場合は何も実行しない
       }
-      player.matrix = rotatedTetro; // 判定がTrueの場合テトロミノを回転させる
-      updateRotationAxis(); // 回転軸を更新する
+      afterRotate(rotatedTetro);
     } else if (player.rotation == 3) {
       if (collision_on_rotate(xPos - 1, yPos, rotatedTetro)) {
         player.pos.x = xPos - 1
@@ -340,10 +335,40 @@ function clockwisSrs(tetroType) { // SRSの判定処理
       } else {
         return ; // 全てFalseの場合は何も実行しない
       }
-      player.matrix = rotatedTetro; // 判定がTrueの場合テトロミノを回転させる
-      updateRotationAxis(); // 回転軸を更新する
+      afterRotate(rotatedTetro);
     }
   }
+}
+function afterRotate(rotatedTetro) {
+  player.maxLastYpos = Math.max(player.maxLastYpos, player.currentLastYPos, lastYPos(player, rotatedTetro)); // 回転前の一番下だった時のy座標と回転後のy座標で大きい方を保持する
+  player.matrix = rotatedTetro;
+  ghostTetrimono(); // ゴーストの位置を更新
+  updateRotationAxis(); // 回転軸を更新
+  if (player.isTouchingGround) {
+    moveReset();
+  }
+}
+function moveReset(){
+  if (player.moveOrRotateCount > 15) { // 16回以上回転・移動した場合即ロックダウン
+    if (player.pos.x == ghost.pos.x && player.pos.y == ghost.pos.y) {
+      playerDrop();
+    }
+    return ;
+  } else { // 16回未満の場合はロックダウンカウントをリセットする
+    player.moveOrRotateCount ++;
+    lastTime = currentTime;
+    // console.log("moveOrRotateCount: " + player.moveOrRotateCount);
+    return ;
+  }
+}
+
+function lastYPos(player, matrix) { // 表示しているテトロミノブロックの一番下の行番号を返す
+  for (let y = matrix.length - 1; y >= 0; y--) {
+    if (matrix[y].some(value => value !== 0)) {
+      return y + player.pos.y
+    }
+  }
+  return null;
 }
 // テトリミノの回転時の他ブロックとの衝突判定を行う関数
 // true か　false を返す
@@ -541,6 +566,11 @@ const player = {
   maxCombo: 0,
   lastClearWasTetris: false,
   backToBackActive: false,
+  isTouchingGround : false,
+  moveOrRotateCount : 1,
+  currentLastYPos: null,
+  maxLastYpos: null,
+  lockDelay: 500,
 };
 
 const ghost = {
@@ -552,8 +582,11 @@ function playerReset() {
   player.current_tetro_type = getNextTetromino(); 
   player.matrix = createPiece(player.current_tetro_type);
   player.rotation = 0; // ミノの回転軸を０に戻す
+  player.moveOrRotateCount = 1; 
+  player.isTouchingGround = false;
   player.pos.y = 0;
   player.pos.x = (arena[0].length/2 | 0 ) - (player.matrix[0].length /2 | 0);
+  player.currentLastYPos = lastYPos(player, player.matrix);
 
   drawNextPieces();
 
@@ -677,11 +710,11 @@ function drawPiece(ctx, piece, startX, startY, blockSize) {
   });
 }
 
-function collide(arena, player){
-  const [m, o] = [player.matrix, player.pos];
+function collide(arena, player){ // 現在表示しているミノとフィールドの衝突判定　衝突したらTrue　x座標の判定してる？
+  const [m, o] = [player.matrix, player.pos]; // 分割代入
   for (let y = 0; y < m.length; y++){
     for (let x = 0; x < m[y].length; x++){
-      if (m[y][x] !== 0 && (arena[y + o.y] && arena[y + o.y][x + o.x]) !== 0 ){
+      if (m[y][x] !== 0 && (arena[y + o.y] && arena[y + o.y][x + o.x]) !== 0 ){ // 要確認
       return true
       }
     }
@@ -689,14 +722,17 @@ function collide(arena, player){
   return false
 }
 
-function playerMove(dir) {
-  
+function playerMove(dir) { // 左右に現在地を移動する
+  let temp = player.pos.x 
   player.pos.x += dir;
 
   if(collide(arena, player)){
     player.pos.x -= dir
   }
   ghostTetrimono()
+  if (player.isTouchingGround && temp != player.pos.x) { // ミノが床に接した後に移動が成功した場合に移動リセットを行う
+    moveReset();
+  }
   play_sounds(move_sound)
 }
 
@@ -718,13 +754,26 @@ let lastTime = 0;
 let animationId;
 
 function playerDrop(){
-
   player.pos.y++ 
-
+  lastTime = currentTime;
+  player.currentLastYPos = lastYPos(player, player.matrix);
+  if (player.isTouchingGround) { 
+    if (player.maxLastYpos < player.currentLastYPos){// 床に一度接した後横移動等でブロックと床の接触状態が変わる場合の処理
+      player.isTouchingGround = false;
+      player.moveOrRotateCount = 1;
+    } 
+    if (player.moveOrRotateCount > 15 && (player.pos.x == ghost.pos.x && player.pos.y == ghost.pos.y)){ // 16回以上リセットしていた場合１マス下げてロックダウン
+      player.pos.y++;
+    }
+  }
+  if (player.pos.x == ghost.pos.x && player.pos.y == ghost.pos.y) { // 接触判定を切り替える
+    player.isTouchingGround = true;
+    player.maxLastYpos = player.currentLastYPos;
+  }
   if(collide(arena, player)){
     player.pos.y--;
-    arenaSweep()
     merge(arena, player)
+    arenaSweep()
     if (!playerReset()) {
       // playerResetがfalseを返した場合（ゲームオーバー時）、ここで処理を終了
       return;
@@ -734,12 +783,13 @@ function playerDrop(){
   }
 }
 
-function ghostTetrimono() {
+
+function ghostTetrimono() { //ゴーストの表示位置を設定する
   ghost.matrix = player.matrix;
   ghost.pos.x = player.pos.x;
   ghost.pos.y = player.pos.y
   while (!collide(arena, ghost)) ghost.pos.y++;
-  while (collide(arena,ghost)) ghost.pos.y--
+  while (collide(arena,ghost)) ghost.pos.y--;
 }
 
 function playerHardDrop() {
@@ -779,12 +829,10 @@ document.addEventListener('keydown', (event) => {
       let new_tetro = rotate(player.matrix)// 回転後のテトリミノの描画情報new_tetro
       // 回転後のテトリミノの描画位置が他のミノの衝突しない場合のみ、現在のテトロミノの描画を変更する
       if(collision_on_rotate(player.pos.x, player.pos.y, new_tetro)){
-        player.matrix = new_tetro;
-        updateRotationAxis();
+        afterRotate(new_tetro);
       } else { // 通常の動作で回転できない時SRSで判定する
         clockwisSrs(player.current_tetro_type); 
       }
-      ghostTetrimono()
       break;
     case 'Shift': // Shiftを押した時の処理
       if (gameActive) {
@@ -805,7 +853,7 @@ document.addEventListener('keydown', (event) => {
 function arenaSweep() {
   // 消した行数をカウントする変数
   let linesCleared = 0;
-  let perfectClear = true;
+  let perfectClear = true; 
 
   // 外側のループ（y軸方向）の設定：配列の一番下から上まで、1行ずつ確認
   outer: for (let y = arena.length - 1; y >= 0; --y) { // 内側のループを効率的に抜け出すため、ラベル付きループを使用
@@ -1072,17 +1120,29 @@ function update() {
   if (gameActive) { // ゲームが非アクティブな場合は更新を行わない
 
     currentTime = performance.now()
-
-    if (currentTime - lastTime >= dropInterval) {
-      playerDrop();
-
-      if (collide(arena, player)) {
-        return;
+    if (!(player.pos.x == ghost.pos.x && player.pos.y == ghost.pos.y)) { //ミノが床に接していない時(通常のドロップ)
+      if (currentTime - lastTime >= dropInterval) {
+        playerDrop();
+  
+        if (collide(arena, player)) {
+          return;
+        }
+  
+        lastTime = currentTime;
       }
-
-      lastTime = currentTime;
+      draw() 
+    } else {
+      if (currentTime - lastTime > Math.floor(dropInterval/2)) { // ミノが床に接している時は通常速度の半分
+        playerDrop();
+  
+        if (collide(arena, player)) {
+          return;
+        }
+  
+        lastTime = currentTime;
+      }
+      draw() 
     }
-    draw() 
   }
   animationId = requestAnimationFrame(update)
 }
