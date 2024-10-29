@@ -344,6 +344,9 @@ function afterRotate(rotatedTetro) {
   player.matrix = rotatedTetro;
   ghostTetrimono(); // ゴーストの位置を更新
   updateRotationAxis(); // 回転軸を更新
+  if (player.tetroType === "T") {
+    player.tSpin = true;
+  }
   if (player.isTouchingGround) {
     moveReset();
   }
@@ -571,6 +574,7 @@ const player = {
   currentLastYPos: null,
   maxLastYpos: null,
   lockDelay: 500,
+  tSpin: false,
 };
 
 const ghost = {
@@ -781,6 +785,7 @@ function playerDrop(){
     updateScore()
     player.hold_used = false;
   }
+  player.tSpin = false; // ロックできなかった場合は、tSpinの判定をfalseにする
 }
 
 
