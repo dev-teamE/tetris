@@ -58,6 +58,8 @@
                     <span id="level">1</span>
                     <h4 class="stat">Lines:</h4>
                     <span id="lines">0</span>
+                    <h4 class="stat">High Score: <br><span id="highScore">0</span></h4>
+                    <h4 class="stat">Time: <span id="playTime">0:00:00</span></span></h4>
                 </div>
                 <!-- <button id="startButton" >start</button> -->
                 <button id="pauseButton">⏸</button>
@@ -70,10 +72,8 @@
             </div>
             <div class="area" id="next-area">
                 <h3>Next</h3>
-                <div id="nextPieces">
-                    <canvas class="box" id="nextPiece" width="115" height="115"></canvas>
-                    <canvas class="box" id="followingPieces" width="115" height="300"></canvas>
-                </div>
+                <canvas class="box" id="nextPiece"></canvas>
+                <canvas class="box" id="followingPieces"></canvas>
             </div>
         </div>
     </div>
