@@ -2,23 +2,26 @@ body {
     margin: 0px;
 }
 
-.container button { /*スタート、一時停止・再開、リスタートボタン共通の設定*/
+.container button {
+    /*スタート、一時停止・再開、リスタートボタン共通の設定*/
     width: 80px;
     height: 50px;
     margin-top: 160px;
-    background: linear-gradient(to bottom, #00bfff, #007acc); /* 青いグラデーション */
+    background: linear-gradient(to bottom, #00bfff, #007acc);
+    /* 青いグラデーション */
     color: white;
-    font-size: 20px;
+    font-size: 30px;
     font-weight: bold;
     border: none;
-    border-radius: 30px; 
-    box-shadow: 0 5px #333, 0 10px 15px rgba(0, 0, 0, 0.2); /* 立体感を出す影 */
+    border-radius: 30px;
+    box-shadow: 0 5px #333, 0 10px 15px rgba(0, 0, 0, 0.2);
+    /* 立体感を出す影 */
     text-transform: uppercase;
     cursor: pointer;
     outline: none;
     display: flex;
     align-items: center;
-    justify-content: center; 
+    justify-content: center;
 }
 
 button:hover {
@@ -26,19 +29,24 @@ button:hover {
 }
 
 button:active {
-    box-shadow: 0 3px #333; /* 押し込んだように影を小さくする */
-    transform: translateY(2px); /* ボタンを少し下に動かす */
+    box-shadow: 0 3px #333;
+    /* 押し込んだように影を小さくする */
+    transform: translateY(2px);
+    /* ボタンを少し下に動かす */
 }
 
 #restartButton {
     /* display: block; */
-    display: none; /* ゲーム起動時は非表示 */
+    display: none;
+    /* ゲーム起動時は非表示 */
 }
 
 #startButton {
     /* display: block; */
-    display: none; /* ゲーム起動時は非表示 */
+    display: none;
+    /* ゲーム起動時は非表示 */
 }
+
 #pauseButton {
     display: block;
     /* display: none; ゲーム起動時は非表示 */
@@ -51,7 +59,7 @@ button:active {
     justify-content: center;
     align-content: center;
     background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(./assets/images/background-img.png);
-    position: relative; 
+    position: relative;
 }
 
 .startScreen::before {
@@ -61,20 +69,25 @@ button:active {
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: inherit; /* 親から背景を継承 */
-    filter: blur(5px); /* ぼかし効果を適用 */
-    z-index: 0; /* 背景にするための低いz-index */
+    background-image: inherit;
+    /* 親から背景を継承 */
+    filter: blur(5px);
+    /* ぼかし効果を適用 */
+    z-index: 0;
+    /* 背景にするための低いz-index */
 }
-
 
 .startContainer {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    position: relative; /* 子要素がぼかし効果の上に表示されるようにする */
-    z-index: 1; /* 子要素を前面に表示 */
+    position: relative;
+    /* 子要素がぼかし効果の上に表示されるようにする */
+    z-index: 1;
+    /* 子要素を前面に表示 */
 }
+
 .logoImg {
     width: 450px;
     height: 300px;
@@ -105,27 +118,38 @@ button:active {
     font-weight: bold;
     outline: none;
     border: none;
-    border-radius: 30px; 
-    background: linear-gradient(to bottom, #00bfff, #007acc); /* 青いグラデーション */
-    box-shadow: 0 5px #333, 0 10px 15px rgba(0, 0, 0, 0.2); /* 立体感を出す影 */
+    border-radius: 30px;
+    background: linear-gradient(to bottom, #00bfff, #007acc);
+    /* 青いグラデーション */
+    box-shadow: 0 5px #333, 0 10px 15px rgba(0, 0, 0, 0.2);
+    /* 立体感を出す影 */
     cursor: pointer;
 }
 
+.selectButton {
+    opacity: 0.3
+}
 
 .settingButtons button {
     height: 50px;
-    width: 150px;
+    width: 145px;
     color: white;
     font-size: 20px;
     font-weight: bold;
     outline: none;
     border: none;
-    border-radius: 30px; 
-    background: linear-gradient(to bottom, #808080, #666666); /* 青いグラデーション */ 
-    box-shadow: 0 5px #333, 0 10px 15px rgba(0, 0, 0, 0.2); /* 立体感を出す影 */
+    border-radius: 30px;
+    background: linear-gradient(to bottom, #808080, #666666);
+    /* 青いグラデーション */
+    box-shadow: 0 5px #333, 0 10px 15px rgba(0, 0, 0, 0.2);
+    /* 立体感を出す影 */
     cursor: pointer;
+    opacity: 0.3
 }
 
+.settingButton {
+    margin-right: 5px
+}
 
 .playScreen {
     height: 100vh;
@@ -134,7 +158,7 @@ button:active {
     justify-content: center;
     align-items: center;
     background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(./assets/images/background-img.png);
-    position: relative; 
+    position: relative;
 }
 
 .playScreen::before {
@@ -144,9 +168,12 @@ button:active {
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: inherit; /* 親から背景を継承 */
-    filter: blur(3px); /* ぼかし効果を適用 */
-    z-index: 0; /* 背景にするための低いz-index */
+    background-image: inherit;
+    /* 親から背景を継承 */
+    filter: blur(3px);
+    /* ぼかし効果を適用 */
+    z-index: 0;
+    /* 背景にするための低いz-index */
 }
 
 /* ゲームに関係するエリアの設定 */
@@ -157,11 +184,13 @@ button:active {
     align-items: center;
     justify-content: center;
     background-color: rgba(45, 46, 131, 0.8);
-    border: 3px solid rgb(51, 98, 194); 
+    border: 3px solid rgb(51, 98, 194);
     border-radius: 8px;
     padding: 10px 20px;
-    position: relative; /* 子要素がぼかし効果の上に表示されるようにする */
-    z-index: 1; /* 子要素を前面に表示 */
+    position: relative;
+    /* 子要素がぼかし効果の上に表示されるようにする */
+    z-index: 1;
+    /* 子要素を前面に表示 */
 }
 
 /* game-containerの各要素の配置を統一するため、各要素の高さを指定 */
@@ -172,30 +201,34 @@ button:active {
 
 .hold-area {
     display: flex;
-    flex-direction: column; /* 見出しとキャンバスを縦並びに */
-    align-items: center; /* 子要素を中央揃え */
-    margin-right: 30px; /* メインエリアとの間隔 */
+    flex-direction: column;
+    /* 見出しとキャンバスを縦並びに */
+    align-items: center;
+    /* 子要素を中央揃え */
+    margin-right: 30px;
+    /* メインエリアとの間隔 */
 }
 
 .hold-area h3 {
     color: #fff;
-    margin: 0; /* デフォルトマージンをリセット */
-    margin-bottom: 10px; /* キャンバスとの間隔 */
+    margin: 0;
+    /* デフォルトマージンをリセット */
+    margin-bottom: 10px;
+    /* キャンバスとの間隔 */
 }
 
 .stats {
     height: 280px;
     width: 100px;
-    border: 3px solid rgb(51, 98, 194); 
+    border: 3px solid rgb(51, 98, 194);
     border-radius: 8px;
-    /* margin: 50px 0 50px 0; */
-    margin-top: 14px;
-    /* padding: 20px 0 20px 0; */
     display: flex;
     flex-direction: column;
     justify-content: center;
-    margin-top: 14px; /* キャンバスとの間隔 */
-    margin-bottom: 0px; /* キャンバスとの間隔 */
+    margin-top: 14px;
+    /* キャンバスとの間隔 */
+    margin-bottom: 0px;
+    /* キャンバスとの間隔 */
 }
 
 .stat {
@@ -208,109 +241,92 @@ button:active {
 #score {
     color: white;
     font-size: 18px;
-    font-weight: bold;
     display: flex;
     justify-content: center;
-    margin-top: -10px;
-    margin-bottom: 7px;
+    margin-top: -12px;
+    margin-bottom: 8px;
 }
+
 #level {
-  color: white;
-  display: flex;
-  justify-content: center;
-  margin-bottom: 7px;
+    color: white;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 8px;
 }
 
 #lines {
-  color: white;
-  display: flex;
-  justify-content: center;
-  margin-bottom: 7px;
+    color: white;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 8px;
 }
-
 
 #highScore {
     color: white;
     display: flex;
     justify-content: center;
-    margin-bottom: 7px;
+    margin-bottom: 8px;
 }
+
 #playTime {
     color: white;
     display: flex;
     justify-content: center;
-    margin-bottom: 7px;
 }
-
-#level {
-    color: white;
-    display: flex;
-    justify-content: center;
-    padding-bottom: 7px
-  }
-  
-  #lines {
-    color: white;
-    display: flex;
-    justify-content: center;
-    padding-bottom: 7px
-  }  
-
-#highScore{
-    color: white;
-    display: flex;
-    justify-content: center;
-    padding-bottom: 7px
-  }
-
-  #playTime{
-    color: white;
-    display: flex;
-    justify-content: center;
-  }
 
 #main-area {
     display: flex;
-    flex-direction: column; /* スコア、キャンバス、ボタンを縦並びに */
-    align-items: center; /* 子要素を中央揃え */
+    flex-direction: column;
+    /* スコア、キャンバス、ボタンを縦並びに */
+    align-items: center;
+    /* 子要素を中央揃え */
 }
 
 #gameMode {
-    color: mediumseagreen;
+    color: rgb(255, 255, 255);
     font-size: 25px;
     font-weight: bold;
-    margin-bottom: 3px;
+    margin-bottom: 6px;
+    margin-top: -5px;
+    padding: 0px
 }
 
 #next-area {
     display: flex;
-    flex-direction: column; /* 見出しとキャンバスを縦並びに */
-    align-items: center; /*小要素を中央揃え*/
-    margin-left: 30px; /* メインエリアとの間隔 */
+    flex-direction: column;
+    /* 見出しとキャンバスを縦並びに */
+    align-items: center;
+    /*小要素を中央揃え*/
+    margin-left: 30px;
+    /* メインエリアとの間隔 */
 }
 
 #next-area h3 {
     color: #fff;
-    margin: 0; /* デフォルトマージンをリセット */
-    margin-bottom: 10px; /* キャンバスとの間隔 */
+    margin: 0;
+    /* デフォルトマージンをリセット */
+    margin-bottom: 10px;
+    /* キャンバスとの間隔 */
 }
 
 #nextPieces {
     display: flex;
-    flex-direction: column; /* 見出しとキャンバスを縦並びに */
+    flex-direction: column;
+    /* 見出しとキャンバスを縦並びに */
 }
 
 #nextPiece {
     /* border: 1px solid #fff; */
-    margin-bottom: 14px; /* キャンバスとの間隔 */
+    margin-bottom: 14px;
+    /* キャンバスとの間隔 */
 }
 
 /* ホールドエリア、プレイエリア、ネクストエリアのcanvasのエリアの設定 */
-.box { 
+.box {
     background-color: black;
-    border: 3px solid rgb(51, 98, 194); /*一番内側の枠線*/
+    border: 3px solid rgb(51, 98, 194);
+    /*一番内側の枠線*/
     border-radius: 8px;
-
 }
 
 #pauseButton {
@@ -322,17 +338,21 @@ button:active {
     font-weight: bold;
     outline: none;
     border: none;
-    border-radius: 30px; 
-    background: linear-gradient(to bottom, #808080, #666666); /* 青いグラデーション */ 
-    box-shadow: 0 5px #333, 0 10px 15px rgba(0, 0, 0, 0.2); /* 立体感を出す影 */
+    border-radius: 30px;
+    background: linear-gradient(to bottom, #808080, #666666);
+    /* 青いグラデーション */
+    box-shadow: 0 5px #333, 0 10px 15px rgba(0, 0, 0, 0.2);
+    /* 立体感を出す影 */
     cursor: pointer;
 }
 
 #restartButton {
     /* display: block; */
-    display: none; /* ゲーム起動時は非表示 */
+    display: none;
+    /* ゲーム起動時は非表示 */
     height: 50px;
     width: 100px;
+    font-size: 25px;
     margin-top: 30px;
     /* margin-bottom: 30px; */
     color: white;
@@ -340,9 +360,11 @@ button:active {
     font-weight: bold;
     outline: none;
     border: none;
-    border-radius: 30px; 
-    background: linear-gradient(to bottom, #00bfff, #007acc); /* 青いグラデーション */
-    box-shadow: 0 5px #333, 0 10px 15px rgba(0, 0, 0, 0.2); /* 立体感を出す影 */
+    border-radius: 30px;
+    background: linear-gradient(to bottom, #00bfff, #007acc);
+    /* 青いグラデーション */
+    box-shadow: 0 5px #333, 0 10px 15px rgba(0, 0, 0, 0.2);
+    /* 立体感を出す影 */
     cursor: pointer;
 }
 
@@ -356,8 +378,10 @@ button:active {
     font-weight: bold;
     outline: none;
     border: none;
-    border-radius: 30px; 
-    background: linear-gradient(to bottom, #00bfff, #007acc); /* 青いグラデーション */
-    box-shadow: 0 5px #333, 0 10px 15px rgba(0, 0, 0, 0.2); /* 立体感を出す影 */
+    border-radius: 30px;
+    background: linear-gradient(to bottom, #00bfff, #007acc);
+    /* 青いグラデーション */
+    box-shadow: 0 5px #333, 0 10px 15px rgba(0, 0, 0, 0.2);
+    /* 立体感を出す影 */
     cursor: pointer;
 }
