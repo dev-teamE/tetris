@@ -7,6 +7,32 @@ let new_tetro, field_row, field_col, current_tetro_size, dropInterval
 
 let canvasHold, canvasNext;
 
+const player = {
+  pos: { x: 0, y: 0 },
+  current_tetro_type: null, // プレイヤー情報として現在のテトロミノの形の情報を持つように修正
+  rotation: 0, // 現在のミノの回転状況
+  hold_tetro_type: null,
+  hold_used: false, // １回の落下中にホールド機能を利用したかどうかの状態
+  matrix: null,
+  score: 0,
+  totalLines: 0,
+  level: 1,
+  combo: 0,
+  maxCombo: 0,
+  lastClearWasTetris: false,
+  backToBackActive: false,
+  isTouchingGround: false,
+  moveOrRotateCount: 1,
+  currentLastYPos: null,
+  maxLastYpos: null,
+  lockDelay: 500,
+  tSpin: false,
+  highScore: 0,
+  isHighScore: false,
+  playTime: 0,
+  startTime: null // ゲーム開始時刻
+};
+
 const canvas = document.querySelector("#tetris");
 const context = canvas.getContext("2d");
 context.scale(25, 25);
@@ -587,31 +613,6 @@ const drawGhostMatrix = (matrix, offset) => {
 // ２次元配列でテトリスの場所を管理する(10*20)
 const arena = Array.from({ length: 20 }, () => Array(10).fill(0));
 
-const player = {
-  pos: { x: 0, y: 0 },
-  current_tetro_type: null, // プレイヤー情報として現在のテトロミノの形の情報を持つように修正
-  rotation: 0, // 現在のミノの回転状況
-  hold_tetro_type: null,
-  hold_used: false, // １回の落下中にホールド機能を利用したかどうかの状態
-  matrix: null,
-  score: 0,
-  totalLines: 0,
-  level: 1,
-  combo: 0,
-  maxCombo: 0,
-  lastClearWasTetris: false,
-  backToBackActive: false,
-  isTouchingGround: false,
-  moveOrRotateCount: 1,
-  currentLastYPos: null,
-  maxLastYpos: null,
-  lockDelay: 500,
-  tSpin: false,
-  highScore: 0,
-  isHighScore: false,
-  playTime: 0,
-  startTime: null // ゲーム開始時刻
-};
 
 const ghost = {
   pos: { x: 0, y: 0 },
