@@ -45,5 +45,6 @@
 
 ## 参考文献
 [テトリスガイドライン](https://tetris.wiki/Tetris_Guideline)
-[Javascriptでテトリスを作ろう](https://tetris.wiki/Tetris_Guideline](https://zenn.dev/kkeeth/books/tetris-with-js/viewer/preparation)
+
+[Javascriptでテトリスを作ろう]([https://tetris.wiki/Tetris_Guideline](https://zenn.dev/kkeeth/books/tetris-with-js/viewer/preparation](https://zenn.dev/kkeeth/books/tetris-with-js/viewer/preparation))
 
