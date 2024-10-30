@@ -12,15 +12,15 @@
     <!-- スタート画面 -->
     <div class="startScreen" id="startScreen">
         <div class="startContainer">
-            <img class="logoImg" src="./assets/images/Tetrislogo.png" >
+            <img class="logoImg" src="./assets/images/Tetrislogo.png">
             <div class="modeContainer">
                 <div class="startButtons">
                     <button class="startButton" id="start" onclick="showPlayScreen()">Play</button>
                     <button class="selectButton">Select Mode</button>
-                </div>  
+                </div>
                 <div class="settingButtons">
                     <button class="settingButton">Setting</button>
-                    <button class="howToButton">How To Play</button>   
+                    <button class="howToButton">How To Play</button>
                 </div>
             </div>
         </div>
@@ -29,15 +29,15 @@
     <!-- ゲームモード選択画面 -->
     <div class="startScreen" style="display:none">
         <div class="startContainer">
-            <img class="logoImg" src="./assets/images/Tetrislogo.png" >
+            <img class="logoImg" src="./assets/images/Tetrislogo.png">
             <div class="modeContainer">
                 <div class="startButtons">
                     <button class="startButton">Play</button>
                     <button class="selectButton">Select Mode</button>
-                </div>  
+                </div>
                 <div class="settingButtons">
                     <button class="settingButton">Setting</button>
-                    <button class="howToButton">How To Play</button>   
+                    <button class="howToButton">How To Play</button>
                 </div>
             </div>
         </div>
@@ -50,7 +50,7 @@
         <div class="gameContainer">
             <div class="area hold-area">
                 <h3>Hold</h3>
-                <canvas class="box" id="hold_canvas" ></canvas>
+                <canvas class="box" id="hold_canvas"></canvas>
                 <div class="stats">
                     <h3 class="stat">Score</h3>
                     <span id="score">0</span>
@@ -65,36 +65,37 @@
                 </div>
                 <!-- <button id="startButton" >start</button> -->
                 <button id="pauseButton">⏸</button>
-                <button id="restartButton">Restart</button>
+                <button id="restartButton">↻</button>
             </div>
             <div class="area" id="main-area">
-                <span id="gameMode">Score Attack</span>
+                <span id="gameMode">Endless Mode</span>
                 <canvas class="box" id="tetris" width="250" height="500"></canvas>
             </div>
             <div class="area" id="next-area">
                 <h3>Next</h3>
                 <canvas class="box" id="nextPiece"></canvas>
                 <canvas class="box" id="followingPieces"></canvas>
-                <button id="homeButton" onclick="showStartScreen()" >⌂</button>
+                <button id="homeButton" onclick="showStartScreen()">⌂</button>
             </div>
         </div>
     </div>
-    <script src="./app.js" type ="module"></script>
+    <script src="./app.js" type="module"></script>
     <script>
         // DOM読み込み後に実行する関数
         document.addEventListener("DOMContentLoaded", () => {
-            window.showPlayScreen = function() {
+            window.showPlayScreen = function () {
                 document.getElementById("startScreen").style.display = "none";
                 document.getElementById("playScreen").style.display = "flex";
             };
         });
         document.addEventListener("DOMContentLoaded", () => {
-            window.showStartScreen = function() {
+            window.showStartScreen = function () {
                 document.getElementById("startScreen").style.display = "flex";
                 document.getElementById("playScreen").style.display = "none";
-                restartGame() 
+                restartGame()
             };
         });
     </script>
 </body>
+
 </html>
