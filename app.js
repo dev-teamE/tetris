@@ -1,12 +1,48 @@
+/*
+インポートと定数の定義
+----------------------------------------*/
+
 import { load_sounds, pause_bgm, play_bgm, play_sounds } from "./audio.js";
 
-// グローバル変数の定義
+// 定数の定義
+const baseSpeed = 1000; // 基準速度: 1秒 = 1000ミリ秒
+const tetrominoes = ['T', 'O', 'L', 'J', 'I', 'S', 'Z'];
+const colors = [
+  null,
+  [210, 66, 255],
+  [255, 229, 1],
+  [255, 165, 63],
+  [15, 75, 215],
+  [112, 226, 254],
+  [57, 231, 95],
+  [220, 0, 0],
+];
+
+/*
+グローバル変数の定義
+----------------------------------------*/
+
 let screen, imgJ, imgS, imgI, imgL, imgT, imgZ, imgO, imgs;
 let bgm_sound, drop_sound, hold_sound, clear_sound, move_sound, rotate_sound;
 let new_tetro, field_row, field_col, current_tetro_size, dropInterval
-
 let canvasHold, canvasNext;
+let currentTime;
+let lastTime = 0;
+let animationId;
+let gameActive = true;
+let pauseStartTime = null;
+let nextPieces = [];
 
+/*
+プレーヤーとゲーム状態の定義
+----------------------------------------*/
+
+// Canvasの初期設定
+const canvas = document.querySelector("#tetris");
+const context = canvas.getContext("2d");
+context.scale(25, 25);
+
+// プレイヤー情報
 const player = {
   pos: { x: 0, y: 0 },
   current_tetro_type: null, // プレイヤー情報として現在のテトロミノの形の情報を持つように修正
@@ -33,33 +69,19 @@ const player = {
   startTime: null // ゲーム開始時刻
 };
 
-const canvas = document.querySelector("#tetris");
-const context = canvas.getContext("2d");
-context.scale(25, 25);
-
-// 表示用の開始位置を計算する関数（NEXTとHOLD用）
-function calculateDisplayPosition(tetroType, canvasWidth, canvasHeight, blockSize) {
-  let startX, startY;
-
-  switch (tetroType) {
-    case "I":
-      startX = (canvasWidth - blockSize * 4) / 2;
-      // Iミノの場合、より上方に配置
-      startY = (canvasHeight - blockSize * 2.5) / 2;
-      break;
-    case "O":
-      startX = (canvasWidth - blockSize * 2) / 2;
-      startY = (canvasHeight - blockSize * 2) / 2;
-      break;
-    default:
-      startX = (canvasWidth - blockSize * 3) / 2;
-      startY = (canvasHeight - blockSize * 2) / 2;
-  }
-
-  return { x: startX, y: startY };
+// ゴーストの情報
+const ghost = {
+  pos: { x: 0, y: 0 },
+  matrix: null,
 }
 
-// Canvasクラスの基底クラス
+// アリーナ
+const arena = Array.from({ length: 20 }, () => Array(10).fill(0));
+
+/*
+Canvas関連のクラス定義
+----------------------------------------*/
+
 class BaseCanvas {
   constructor(canvasId, blockSize, row, col) {
     this.canvas = document.getElementById(canvasId);
@@ -100,7 +122,6 @@ class BaseCanvas {
     const tetroSize = this.getTetroSize(matrix);
     const scaledSize = tetroSize * scale;
 
-    // ネクストミノズのスケーリングのための調整
     const offset = {
       x: (this.canvasWidth() - scaledSize) / (2 * this.blockSize),
       y: pos.y / this.blockSize
@@ -141,14 +162,12 @@ class BaseCanvas {
   }
 }
 
-// ホールド用のCanvasクラス
 class CanvasHold extends BaseCanvas {
   constructor() {
     super("hold_canvas", 20, 5, 5);
   }
 }
 
-// Next表示用のCanvasクラス
 class CanvasNext {
   constructor() {
     this.mainNext = new BaseCanvas("nextPiece", 20, 5, 5);
@@ -177,7 +196,7 @@ class CanvasNext {
       const tetroSize = this.following.getTetroSize(matrix);
       const scaledSize = tetroSize * 0.7;
 
-      // 中央配置のための調整（Iミノの場合は特別な位置調整）
+      // 中央配置のための調整
       const xOffset = (this.following.canvasWidth() - scaledSize) / (2 * this.following.blockSize);
       let yAdjust = 0;
       if (pieces[i] === 'I') {
@@ -197,6 +216,79 @@ class CanvasNext {
   }
 }
 
+/*
+描画関連の関数
+----------------------------------------*/
+
+// 表示用の開始位置を計算する関数（NEXTとHOLD用）
+function calculateDisplayPosition(tetroType, canvasWidth, canvasHeight, blockSize) {
+  let startX, startY;
+
+  switch (tetroType) {
+    case "I":
+      startX = (canvasWidth - blockSize * 4) / 2;
+      // Iミノの場合、より上方に配置
+      startY = (canvasHeight - blockSize * 2.5) / 2;
+      break;
+    case "O":
+      startX = (canvasWidth - blockSize * 2) / 2;
+      startY = (canvasHeight - blockSize * 2) / 2;
+      break;
+    default:
+      startX = (canvasWidth - blockSize * 3) / 2;
+      startY = (canvasHeight - blockSize * 2) / 2;
+  }
+
+  return { x: startX, y: startY };
+}
+
+const draw = () => {
+  context.fillStyle = "#000";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+
+  // 変更した盤面を映す
+  drawScreen(screen)
+  drawMatrix(arena, { x: 0, y: 0 }, imgs)
+  drawMatrix(player.matrix, player.pos, imgs)
+  drawGhostMatrix(ghost.matrix, ghost.pos)
+};
+
+const drawScreen = (screen) => {
+  context.drawImage(screen, 0, 0, 10, 20);
+};
+
+const drawMatrix = (matrix, offset, imgs) => {
+
+  // 線の幅を設定（スケールの逆数）
+  context.lineWidth = 1 / 20;
+
+  // matrixを描画
+  matrix.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value !== 0) {
+        // パターンを使用して塗りつぶし
+        context.drawImage(imgs[value], x + offset.x, y + offset.y, 1, 1);
+      }
+    });
+  });
+}
+
+const drawGhostMatrix = (matrix, offset) => {
+
+  // 線の幅を設定（スケールの逆数）
+  context.lineWidth = 1 / 20;
+
+  matrix.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value !== 0) {
+        // 線を描画
+        context.strokeStyle = "rgba(" + colors[value] + ")";;
+        context.strokeRect(x + offset.x, y + offset.y, 1, 1);
+      }
+    });
+  });
+}
+
 function draw_hold_field(tetro_type) {
   canvasHold.clearCanvas();
   if (tetro_type) {
@@ -208,36 +300,118 @@ function drawNextPieces() {
   canvasNext.drawNextPieces(nextPieces);
 }
 
-function player_reset_after_hold() {
-  if (player.hold_tetro_type != null) {// 2回目以降のホールド時の処理
-    player.hold_used = true;
-    let temp = player.current_tetro_type;
-    player.current_tetro_type = player.hold_tetro_type;
-    player.hold_tetro_type = temp;
-    player.rotation = 0;
-    player.matrix = createPiece(player.current_tetro_type);
-    player.moveOrRotateCount = 1;
-    player.isTouchingGround = false;
-    // 位置を真ん中にする
-    player.pos.y = 0;
-    player.pos.x = (arena[0].length / 2 | 0) - (player.matrix[0].length / 2 | 0)
-    ghostTetrimono()
-    draw_hold_field(player.hold_tetro_type);
-    drawNextPieces();
-    // // ゲームオーバー
-    // 配置直後に衝突判定
-    if (collide(arena, player)) {
-      gameOver();
-      return false; // ゲームオーバーを示すfalseを返す
-    }
-    return true; // 正常にリセットされたことを示すtrueを返す
-  } else {// １回目のホールド時の処理
-    player.hold_used = true;
-    player.hold_tetro_type = player.current_tetro_type;
-    playerReset();
-    draw_hold_field(player.hold_tetro_type);
+function drawGameOver(finalPlayTime) {
+  context.save();  // 現在の描画状態を保存
+  context.setTransform(1, 0, 0, 1, 0, 0);
+  context.fillStyle = 'rgba(0, 0, 0, 0.75)';
+  context.fillRect(0, 0, canvas.width, canvas.height);
+
+
+  if (player.isHighScore) {
+    context.fillStyle = '#00FF00';
+    context.font = 'bold 30px Arial';
+    context.textAlign = 'center';
+    context.textBaseline = 'center';
+    context.fillText(`New Record!!`, canvas.width / 2, canvas.height / 2);
+  } else {
+    context.fillStyle = '#FF0000';
+    context.font = 'bold 30px Arial';
+    context.textAlign = 'center';
+    context.textBaseline = 'center';
+    context.fillText('GAME OVER', canvas.width / 2, canvas.height / 2);
   }
-  play_sounds(hold_sound)
+
+  context.restore();  // 描画状態を元に戻す
+}
+
+// ゲームスタート画面の描画
+function drawGameStart() {
+  context.save();  // 現在の描画状態を保存
+  context.setTransform(1, 0, 0, 1, 0, 0);
+  context.fillStyle = 'rgba(0, 0, 0, 0.75)';
+  context.fillRect(0, 0, canvas.width, canvas.height);
+
+  context.fillStyle = '#00FF00';
+  context.font = 'bold 36px Arial';
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.fillText('TETRIS', canvas.width / 2, canvas.height / 2 - 30);
+
+  context.fillStyle = '#FFFFFF';
+  context.font = '18px Arial';
+  context.fillText('Press Start to Play!', canvas.width / 2, canvas.height / 2 + 20);
+
+  context.restore();
+  restartGame()
+}
+
+/*
+テトロミノ操作関連の関数
+----------------------------------------*/
+
+// ピースの構造を定義(数字は色のインデックス)
+const createPiece = (type) => {
+  if (type === 'T') {
+    return [
+      [0, 1, 0],
+      [1, 1, 1],
+      [0, 0, 0],
+    ];
+  } else if (type === "O") {
+    return [
+      [2, 2],
+      [2, 2],
+    ];
+  } else if (type === "L") {
+    return [
+      [0, 0, 3],
+      [3, 3, 3],
+      [0, 0, 0],
+    ];
+  } else if (type === "J") {
+    return [
+      [4, 0, 0],
+      [4, 4, 4],
+      [0, 0, 0],
+    ];
+  } else if (type === "I") {
+    return [
+      [0, 0, 0, 0],
+      [5, 5, 5, 5],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+    ];
+  } else if (type === 'S') {
+    return [
+      [0, 6, 6],
+      [6, 6, 0],
+      [0, 0, 0],
+    ];
+  } else if (type === 'Z') {
+    return [
+      [7, 7, 0],
+      [0, 7, 7],
+      [0, 0, 0],
+    ];
+  }
+}
+
+// 現在のテトロミノの配列を90度時計回りに回転させた配列を返す関数
+// 以下引数について
+// current_tetro: 現在のテトロミノの２次元配列
+function rotate(current_tetro) {
+  let new_tetro = []; // 回転後の情報を格納する配列new_tetroを作成
+  let current_tetro_size = current_tetro.length; // 現在のテトリミノの配列のサイズを取得する
+  for (let y = 0; y < current_tetro_size; y++) {
+    // ２次元配列にしたいので行ごとに配列を作成
+    new_tetro[y] = [];
+    for (let x = 0; x < current_tetro_size; x++) {
+      // 時計回りに90度回転させる場合の転記
+      new_tetro[y][x] = current_tetro[current_tetro_size - x - 1][y];
+    }
+  }
+  play_sounds(rotate_sound)
+  return new_tetro;
 }
 
 function updateRotationAxis() { // プレイヤーに保存している現在の表示しているテトロミノ回転軸を更新する
@@ -410,29 +584,6 @@ function afterRotate(rotatedTetro) {
   }
 }
 
-function moveReset() {
-  if (player.moveOrRotateCount > 15) { // 16回以上回転・移動した場合即ロックダウン
-    if (player.pos.x == ghost.pos.x && player.pos.y == ghost.pos.y) {
-      playerDrop();
-    }
-    return;
-  } else { // 16回未満の場合はロックダウンカウントをリセットする
-    player.moveOrRotateCount++;
-    lastTime = currentTime;
-    // console.log("moveOrRotateCount: " + player.moveOrRotateCount);
-    return;
-  }
-}
-
-function lastYPos(player, matrix) { // 表示しているテトロミノブロックの一番下の行番号を返す
-  for (let y = matrix.length - 1; y >= 0; y--) {
-    if (matrix[y].some(value => value !== 0)) {
-      return y + player.pos.y
-    }
-  }
-  return null;
-}
-
 // テトリミノの回転時の他ブロックとの衝突判定を行う関数
 // true か　false を返す
 // 以下引数について
@@ -465,235 +616,9 @@ function collision_on_rotate(current_x, current_y, rotated_tetro) {
   return true;
 }
 
-//　現在のテトロミノの配列を90度時計回りに回転させた配列を返す関数
-// 以下引数について
-// current_tetro: 現在のテトロミノの２次元配列
-function rotate(current_tetro) {
-  let new_tetro = [];     // 回転後の情報を格納する配列new_tetroを作成
-  let current_tetro_size = current_tetro.length; // 現在のテトリミノの配列のサイズを取得する
-  for (let y = 0; y < current_tetro_size; y++) {
-    // ２次元配列にしたいので行ごとに配列を作成
-    new_tetro[y] = [];
-    for (let x = 0; x < current_tetro_size; x++) {
-      // 時計回りに90度回転させる場合の転記
-      new_tetro[y][x] = current_tetro[current_tetro_size - x - 1][y];
-    }
-  }
-  play_sounds(rotate_sound)
-  return new_tetro;
-}
-
-const draw = () => {
-  context.fillStyle = "#000";
-  context.fillRect(0, 0, canvas.width, canvas.height);
-
-  // 変更した盤面を映す
-  drawScreen(screen)
-  drawMatrix(arena, { x: 0, y: 0 }, imgs)
-  drawMatrix(player.matrix, player.pos, imgs)
-  drawGhostMatrix(ghost.matrix, ghost.pos)
-
-};
-
-// ピースの構造を定義(数字は色のインデックス)
-const createPiece = (type) => {
-  if (type === 'T') {
-    return [
-      [0, 1, 0],
-      [1, 1, 1],
-      [0, 0, 0],
-    ];
-  } else if (type === "O") {
-    return [
-      [2, 2],
-      [2, 2],
-    ];
-  } else if (type === "L") {
-    return [
-      [0, 0, 3],
-      [3, 3, 3],
-      [0, 0, 0],
-    ];
-  } else if (type === "J") {
-    return [
-      [4, 0, 0],
-      [4, 4, 4],
-      [0, 0, 0],
-    ];
-  } else if (type === "I") {
-    return [
-      [0, 0, 0, 0],
-      [5, 5, 5, 5],
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-    ];
-  } else if (type === 'S') {
-    return [
-      [0, 6, 6],
-      [6, 6, 0],
-      [0, 0, 0],
-    ];
-  } else if (type === 'Z') {
-    return [
-      [7, 7, 0],
-      [0, 7, 7],
-      [0, 0, 0],
-    ];
-  }
-}
-
-// ピースの色を定義
-const colors = [
-  null,
-  [210, 66, 255],
-  [255, 229, 1],
-  [255, 165, 63],
-  [15, 75, 215],
-  [112, 226, 254],
-  [57, 231, 95],
-  [220, 0, 0],
-];
-
-/**
- * @param {object} matrix - ピースの形状と配置を表す2次元配列
- * @param {object} offset - ピースの描画位置を指定するオブジェクト. xとyのプロパティを持つ
- */
-
-//画像読込関数
-async function load_image(path) {
-  const t_img = new Image();
-  return new Promise(
-    (resolve) => {
-      t_img.onload = () => {
-        resolve(t_img);
-      }
-      t_img.src = path;
-    }
-  )
-};
-
-
-const drawScreen = (screen) => {
-  context.drawImage(screen, 0, 0, 10, 20);
-};
-
-const drawMatrix = (matrix, offset, imgs) => {
-
-  // 線の幅を設定（スケールの逆数）
-  context.lineWidth = 1 / 20;
-
-  // matrixを描画
-  matrix.forEach((row, y) => {
-    row.forEach((value, x) => {
-      if (value !== 0) {
-        // パターンを使用して塗りつぶし
-        context.drawImage(imgs[value], x + offset.x, y + offset.y, 1, 1);
-      }
-    });
-  });
-}
-
-
-const drawGhostMatrix = (matrix, offset) => {
-
-  // 線の幅を設定（スケールの逆数）
-  context.lineWidth = 1 / 20;
-
-  matrix.forEach((row, y) => {
-    row.forEach((value, x) => {
-      if (value !== 0) {
-        // 線を描画
-        context.strokeStyle = "rgba(" + colors[value] + ")";;
-        context.strokeRect(x + offset.x, y + offset.y, 1, 1);
-      }
-    });
-  });
-}
-
-// ２次元配列でテトリスの場所を管理する(10*20)
-const arena = Array.from({ length: 20 }, () => Array(10).fill(0));
-
-
-const ghost = {
-  pos: { x: 0, y: 0 },
-  matrix: null,
-}
-
-function playerReset() {
-  player.current_tetro_type = getNextTetromino();
-  player.matrix = createPiece(player.current_tetro_type);
-  player.rotation = 0; // ミノの回転軸を０に戻す
-  player.moveOrRotateCount = 1;
-  player.isTouchingGround = false;
-  player.pos.y = 0;
-  player.pos.x = (arena[0].length / 2 | 0) - (player.matrix[0].length / 2 | 0);
-  player.currentLastYPos = lastYPos(player, player.matrix);
-
-  drawNextPieces();
-
-  // // ゲームオーバー
-  // 配置直後に衝突判定
-  if (collide(arena, player)) {
-    gameOver();
-    return false; // ゲームオーバーを示すfalseを返す
-  }
-  ghostTetrimono();
-  return true; // 正常にリセットされたことを示すtrueを返す
-}
-
 /*
-NEXTミノ
-———————————–*/
-
-// シャッフル関数（Fisher-Yatesアルゴリズム）でセブンバッグを作り、バッグが空になるまでランダムに取り出す
-const tetrominoes = ['T', 'O', 'L', 'J', 'I', 'S', 'Z'];
-
-// 次に出現するピースを保持するための配列
-let nextPieces = [];
-
-// Fisher-Yatesアルゴリズムを使用した配列のシャッフル関数
-function shuffle(array) {
-  // 配列の末尾から順に処理を行う
-  for (let i = array.length - 1; i > 0; i--) {
-    // ランダムな位置jを選ぶ（i＋1未満のランダムな少数を作り、少数以下を切り捨てる）
-    const j = Math.floor(Math.random() * (i + 1));
-    // 現在の位置iの要素と交換する（分割代入を使う）
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-}
-
-// セブンバッグを生成する関数
-function generateSevenBag() {
-  // 7つのテトロミノをコピーしてシャッフルする関数
-  return shuffle([...tetrominoes]);
-}
-
-// 次のテトロミノを取得する関数（ゲーム開始時とミノがロックされた時に呼び出す）
-function getNextTetromino() {
-  if (nextPieces.length <= 7) {
-    nextPieces = nextPieces.concat(generateSevenBag());
-  }
-  return nextPieces.shift();
-}
-
-// ゲーム開始時に次のピースを生成
-nextPieces = generateSevenBag();
-
-/*
-NEXT表示システム
-———————————–*/
-function collide(arena, player) {
-  const [m, o] = [player.matrix, player.pos];
-  for (let y = 0; y < m.length; y++) {
-    for (let x = 0; x < m[y].length; x++) {
-      if (m[y][x] !== 0 && (arena[y + o.y] && arena[y + o.y][x + o.x]) !== 0) { // 要確認
-        return true
-      }
-    }
-  }
-  return false
-}
+プレイヤーの動作関連の関数
+----------------------------------------*/
 
 function playerMove(dir) { // 左右に現在地を移動する
   let temp = player.pos.x
@@ -708,23 +633,6 @@ function playerMove(dir) { // 左右に現在地を移動する
   }
   play_sounds(move_sound)
 }
-
-function merge(arena, player) {
-  player.matrix.forEach((row, y) => {
-    row.forEach((value, x) => {
-      if (value !== 0) {
-        arena[y + player.pos.y][x + player.pos.x] = value;
-      }
-    })
-  })
-  play_sounds(drop_sound)
-}
-
-let currentTime;
-let lastTime = 0;
-
-// ゲームを停止するために使うアニメーションフレームID
-let animationId;
 
 function playerDrop() {
   player.pos.y++
@@ -758,15 +666,6 @@ function playerDrop() {
   lastTime = currentTime
 }
 
-
-function ghostTetrimono() { //ゴーストの表示位置を設定する
-  ghost.matrix = player.matrix;
-  ghost.pos.x = player.pos.x;
-  ghost.pos.y = player.pos.y
-  while (!collide(arena, ghost)) ghost.pos.y++;
-  while (collide(arena, ghost)) ghost.pos.y--;
-}
-
 function playerHardDrop() {
   while (player.pos.y < ghost.pos.y) player.pos.y++
   merge(arena, player)
@@ -782,83 +681,164 @@ function playerHardDrop() {
   currentTime = 0;
 }
 
+function playerReset() {
+  player.current_tetro_type = getNextTetromino();
+  player.matrix = createPiece(player.current_tetro_type);
+  player.rotation = 0; // ミノの回転軸を０に戻す
+  player.moveOrRotateCount = 1;
+  player.isTouchingGround = false;
+  player.pos.y = 0;
+  player.pos.x = (arena[0].length / 2 | 0) - (player.matrix[0].length / 2 | 0);
+  player.currentLastYPos = lastYPos(player, player.matrix);
 
-document.addEventListener('keydown', (event) => {
-  if (!gameActive) return;
-  switch (event.key) {
-    case 'ArrowLeft':
-      playerMove(-1);
-      break;
-    case 'ArrowRight':
-      playerMove(1);
-      break;
-    case 'ArrowDown':
-      playerDrop();
-      break;
-    // ハードドロップと回転を入れる
-    case 'ArrowUp':
-      playerHardDrop();
-      break;
-    case ' ': // スペースを押した時の処理
-      let new_tetro = rotate(player.matrix)// 回転後のテトリミノの描画情報new_tetro
-      // 回転後のテトリミノの描画位置が他のミノの衝突しない場合のみ、現在のテトロミノの描画を変更する
-      if (collision_on_rotate(player.pos.x, player.pos.y, new_tetro)) {
-        afterRotate(new_tetro);
-      } else { // 通常の動作で回転できない時SRSで判定する
-        clockwisSrs(player.current_tetro_type);
-      }
-      break;
-    case 'Shift': // Shiftを押した時の処理
-      if (gameActive) {
-        if (!player.hold_used) {
-          player_reset_after_hold();
-        }
-      }
-      break;
+  drawNextPieces();
+
+  // // ゲームオーバー
+  // 配置直後に衝突判定
+  if (collide(arena, player)) {
+    gameOver();
+    return false; // ゲームオーバーを示すfalseを返す
   }
-});
+  ghostTetrimono();
+  return true; // 正常にリセットされたことを示すtrueを返す
+}
+
+function player_reset_after_hold() {
+  if (player.hold_tetro_type != null) {// 2回目以降のホールド時の処理
+    player.hold_used = true;
+    let temp = player.current_tetro_type;
+    player.current_tetro_type = player.hold_tetro_type;
+    player.hold_tetro_type = temp;
+    player.rotation = 0;
+    player.matrix = createPiece(player.current_tetro_type);
+    player.moveOrRotateCount = 1;
+    player.isTouchingGround = false;
+    // 位置を真ん中にする
+    player.pos.y = 0;
+    player.pos.x = (arena[0].length / 2 | 0) - (player.matrix[0].length / 2 | 0)
+    ghostTetrimono()
+    draw_hold_field(player.hold_tetro_type);
+    drawNextPieces();
+    // // ゲームオーバー
+    // 配置直後に衝突判定
+    if (collide(arena, player)) {
+      gameOver();
+      return false; // ゲームオーバーを示すfalseを返す
+    }
+    return true; // 正常にリセットされたことを示すtrueを返す
+  } else {// １回目のホールド時の処理
+    player.hold_used = true;
+    player.hold_tetro_type = player.current_tetro_type;
+    playerReset();
+    draw_hold_field(player.hold_tetro_type);
+  }
+  play_sounds(hold_sound)
+}
+
+function moveReset() {
+  if (player.moveOrRotateCount > 15) { // 16回以上回転・移動した場合即ロックダウン
+    if (player.pos.x == ghost.pos.x && player.pos.y == ghost.pos.y) {
+      playerDrop();
+    }
+    return;
+  } else { // 16回未満の場合はロックダウンカウントをリセットする
+    player.moveOrRotateCount++;
+    lastTime = currentTime;
+    // console.log("moveOrRotateCount: " + player.moveOrRotateCount);
+    return;
+  }
+}
+
+function lastYPos(player, matrix) { // 表示しているテトロミノブロックの一番下の行番号を返す
+  for (let y = matrix.length - 1; y >= 0; y--) {
+    if (matrix[y].some(value => value !== 0)) {
+      return y + player.pos.y
+    }
+  }
+  return null;
+}
 
 /*
-2. ライン消去とスコアシステム
-———————————–*/
+NEXTとHOLD関連の関数
+----------------------------------------*/
+
+// Fisher-Yatesアルゴリズムを使用した配列のシャッフル関数
+function shuffle(array) {
+  // 配列の末尾から順に処理を行う
+  for (let i = array.length - 1; i > 0; i--) {
+    // ランダムな位置jを選ぶ（i＋1未満のランダムな少数を作り、少数以下を切り捨てる）
+    const j = Math.floor(Math.random() * (i + 1));
+    // 現在の位置iの要素と交換する（分割代入を使う）
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+// セブンバッグを生成する関数
+function generateSevenBag() {
+  // 7つのテトロミノをコピーしてシャッフルする関数
+  return shuffle([...tetrominoes]);
+}
+
+// 次のテトロミノを取得する関数（ゲーム開始時とミノがロックされた時に呼び出す）
+function getNextTetromino() {
+  if (nextPieces.length <= 7) {
+    nextPieces = nextPieces.concat(generateSevenBag());
+  }
+  return nextPieces.shift();
+}
+
+/*
+スコアとレベル管理
+----------------------------------------*/
+
+function checkPerfectClear() {
+  // フィールド全体をチェック
+  for (let y = 0; y < arena.length; y++) {
+      for (let x = 0; x < arena[y].length; x++) {
+          if (arena[y][x] !== 0) {
+              return false;  // ブロックが残っている場合
+          }
+      }
+  }
+  return true;  // 全てのマスが空の場合
+}
+
+function updateBackToBack(linesCleared) {
+  if (linesCleared === 4) {
+      if (!player.lastClearWasTetris) {
+          player.lastClearWasTetris = true;
+          player.backToBackActive = false;
+      } else {
+          player.backToBackActive = true;
+      }
+  } else {
+      player.lastClearWasTetris = false;
+      player.backToBackActive = false;
+  }
+}
 
 // フィールド内の完成した行を削除し、スコアを更新する関数
 function arenaSweep() {
-  // 消した行数をカウントする変数
   let linesCleared = 0;
-  let perfectClear = true;
+    let perfectClear = true;
 
-  // 外側のループ（y軸方向）の設定：配列の一番下から上まで、1行ずつ確認
-  outer: for (let y = arena.length - 1; y >= 0; --y) { // 内側のループを効率的に抜け出すため、ラベル付きループを使用
-    // 内側のループ（x軸方向）の設定：0から最後のインデックスまで
-    for (let x = 0; x < arena[y].length; ++x) {
-      // マスの確認とスキップ処理
-      if (arena[y][x] === 0) {
-        continue outer; // 空白(0)があれば、その行をスキップして次の行へ
-      }
+    // 行を消すループ
+    outer: for (let y = arena.length - 1; y >= 0; --y) {
+        for (let x = 0; x < arena[y].length; ++x) {
+            if (arena[y][x] === 0) {
+                continue outer;
+            }
+        }
+        const row = arena.splice(y, 1)[0].fill(0);
+        arena.unshift(row);
+        ++y;
+        ++linesCleared;
+        // ここでのコンボ増加は削除
     }
-
-    // 行の削除と新しい行の追加
-    // splice(開始位置, 削除する要素数)で行を削除、[index]で取り出し、fill(value)で埋める
-    const row = arena.splice(y, 1)[0].fill(0);
-    arena.unshift(row); // 0で埋めた行rowを、unshiftで一番上（配列の先頭）に追加
-    ++y; // 行を削除したことで落ちてきた分の行もチェックするため
-    ++linesCleared; // スコア計算に使用するため、消した行数をカウントする
-    ++player.combo;
-  }
 
   if (linesCleared > 0) {
-    // ライン消去後にパーフェクトクリア判定
-    let perfectClear = true;
-    // フィールド全体をチェック
-    checkPerfect: for (let y = 0; y < arena.length; y++) {
-      for (let x = 0; x < arena[y].length; x++) {
-        if (arena[y][x] !== 0) {
-          perfectClear = false;
-          break checkPerfect;
-        }
-      }
-    }
+    const perfectClear = checkPerfectClear();
 
     // 基本スコア計算
     const baseScores = {
@@ -868,7 +848,6 @@ function arenaSweep() {
       4: 800
     };
 
-    // パーフェクトクリア時の特別スコア
     const perfectClearScores = {
       1: 900,
       2: 1500,
@@ -876,23 +855,8 @@ function arenaSweep() {
       4: 2800
     };
 
-    // Back to Back状態の更新
-    if (linesCleared === 4) {
-      if (!player.lastClearWasTetris) {
-        player.lastClearWasTetris = true;
-        player.backToBackActive = false;
-      } else {
-        player.backToBackActive = true;
-      }
-    } else {
-      player.lastClearWasTetris = false;
-      player.backToBackActive = false;
-    }
-
-    // コンボボーナス計算（連続でライン消しした場合）
-    const comboBonus = player.combo > 1 ? Math.floor(50 * (player.combo - 1)) : 0;
-    player.combo = (player.combo || 0) + 1;  // 連続クリア回数をカウント
-
+    updateBackToBack(linesCleared);
+    
     // スコア計算
     let lineScore;
     if (perfectClear) {
@@ -906,6 +870,14 @@ function arenaSweep() {
         lineScore = Math.floor(lineScore * 1.5);
       }
     }
+
+    // コンボボーナスを計算
+    let comboBonus = 0;
+    if (player.combo > 0) {
+      comboBonus = 50 * player.combo;
+    }
+
+    player.combo++;
 
     // 最終スコア加算
     player.score += lineScore + comboBonus;
@@ -922,20 +894,6 @@ function arenaSweep() {
     // playerDropでarenaSweepが呼ばれた際、消去できる行がなければコンボリセット
     player.combo = 0;
   }
-}
-
-// プレイ時間を計算（秒単位）
-function getPlayTimeInSeconds() {
-  if (!gameActive || !player.startTime) return 0;
-  return Math.floor((Date.now() - player.startTime) / 1000);
-}
-
-function formatTime(seconds) {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const remainingSeconds = Math.floor(seconds % 60);
-
-  return `${hours}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
 // スコアを保存する関数
@@ -994,8 +952,6 @@ function updateScore() {
   }
 }
 
-const baseSpeed = 1000; // 基準速度: 1秒 = 1000ミリ秒
-
 // レベルアップの条件をチェックし、必要に応じてレベルアップする関数
 function checkLevelUp() {
   const newLevel = Math.floor(player.totalLines / 10) + 1;
@@ -1027,12 +983,27 @@ function updateLevel() {
   document.querySelector('#level').innerText = player.level;
 }
 
-// プレイ時間の表示を更新する関数
+/*
+時間関連の関数
+----------------------------------------*/
+
+function getPlayTimeInSeconds() {
+  if (!gameActive || !player.startTime) return 0;
+  return Math.floor((Date.now() - player.startTime) / 1000);
+}
+
+function formatTime(seconds) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+
+  return `${hours}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
 function updatePlayTime() {
   document.querySelector('#playTime').innerText = formatTime(getPlayTimeInSeconds());
 }
 
-// 最短クリア時間の表示（マラソンモードの実装用）
 function displayBestTime() {
   const scores = getAllHighScores();
   if (scores.length === 0) return "No records";
@@ -1042,13 +1013,15 @@ function displayBestTime() {
 }
 
 /*
-Game Over
-———————————–*/
+ゲーム状態管理の関数
+----------------------------------------*/
 
-// ゲーム状態の管理
-let gameActive = true;    // ゲームの状態を管理するためのグローバル変数
+function gameStart() {
+  drawGameStart(); // ゲームオーバー表示を描画
+  context.restore()
+  play_sounds(bgm_sound)
+}
 
-// ゲームオーバー時の処理、アニメーションを停止し、リスタートボタンを表示
 function gameOver() {
   const finalPlayTime = getPlayTimeInSeconds();
 
@@ -1063,58 +1036,7 @@ function gameOver() {
   }
 }
 
-function gameStart() {
-  // document.getElementById('startButton').style.display = 'block'; // スタートボタンを表示
-  drawGameStart(); // ゲームオーバー表示を描画
-  context.restore()
-  play_sounds(bgm_sound)
-}
 
-// ゲームオーバー画面の描画
-function drawGameOver(finalPlayTime) {
-  context.save();  // 現在の描画状態を保存
-  context.setTransform(1, 0, 0, 1, 0, 0);
-  context.fillStyle = 'rgba(0, 0, 0, 0.75)';
-  context.fillRect(0, 0, canvas.width, canvas.height);
-
-
-  if (player.isHighScore) {
-    context.fillStyle = '#00FF00';
-    context.font = 'bold 30px Arial';
-    context.textAlign = 'center';
-    context.textBaseline = 'center';
-    context.fillText(`New Record!!`, canvas.width / 2, canvas.height / 2);
-  } else {
-    context.fillStyle = '#FF0000';
-    context.font = 'bold 30px Arial';
-    context.textAlign = 'center';
-    context.textBaseline = 'center';
-    context.fillText('GAME OVER', canvas.width / 2, canvas.height / 2);
-  }
-
-  context.restore();  // 描画状態を元に戻す
-}
-
-// ゲームスタート画面の描画
-function drawGameStart() {
-  context.save();  // 現在の描画状態を保存
-  context.setTransform(1, 0, 0, 1, 0, 0);
-  context.fillStyle = 'rgba(0, 0, 0, 0.75)';
-  context.fillRect(0, 0, canvas.width, canvas.height);
-
-  context.fillStyle = '#00FF00';
-  context.font = 'bold 36px Arial';
-  context.textAlign = 'center';
-  context.textBaseline = 'middle';
-  context.fillText('TETRIS', canvas.width / 2, canvas.height / 2 - 30);
-
-  context.fillStyle = '#FFFFFF';
-  context.font = '18px Arial';
-  context.fillText('Press Start to Play!', canvas.width / 2, canvas.height / 2 + 20);
-
-  context.restore();
-  restartGame()
-}
 
 function restartGame() {
   // ゲームの状態をアクティブに設定
@@ -1166,6 +1088,25 @@ function restartGame() {
   play_bgm(bgm_sound);
 }
 
+function pauseGame() {
+  if (gameActive) {
+    // 一時停止処理
+    gameActive = false;
+    cancelAnimationFrame(animationId); // アニメーションフレームの停止
+    document.getElementById("pauseButton").innerText = "▷"; // ボタンのテキストを「Resume」に変更
+    pause_bgm(bgm_sound);
+    pauseStartTime = Date.now();
+  } else {
+    // ゲームを再開
+    gameActive = true;
+    const pauseDuration = Date.now() - pauseStartTime;
+    player.startTime += pauseDuration;  // 開始時刻を一時停止時間分ずらす
+    update(); // ゲーム更新を再開
+    document.getElementById("pauseButton").innerText = "⏸"; //  ボタンのテキストをPauseに戻す
+    play_bgm(bgm_sound);
+  }
+}
+
 function update() {
   if (gameActive) { // ゲームが非アクティブな場合は更新を行わない
 
@@ -1202,42 +1143,6 @@ function update() {
   animationId = requestAnimationFrame(update)
 }
 
-
-// リスタートボタンがクリックされたときにrestartGame関数を実行
-document.getElementById('restartButton').addEventListener('click', restartGame);
-// document.getElementById('startButton').addEventListener('click', restartGame);
-document.getElementById('homeButton').addEventListener('click', restartGame);
-document.getElementById('start').addEventListener('click', gameStart);
-
-
-// 一時停止・再開ボタン
-document.getElementById("pauseButton").addEventListener("click", function () {
-  pauseGame();
-  document.getElementById("pauseButton").blur(); // ボタンからフォーカスを外す 
-})
-
-let pauseStartTime = null;
-
-// 一時停止・再開の処理
-function pauseGame() {
-  if (gameActive) {
-    // 一時停止処理
-    gameActive = false;
-    cancelAnimationFrame(animationId); // アニメーションフレームの停止
-    document.getElementById("pauseButton").innerText = "▷"; // ボタンのテキストを「Resume」に変更
-    pause_bgm(bgm_sound);
-    pauseStartTime = Date.now();
-  } else {
-    // ゲームを再開
-    gameActive = true;
-    const pauseDuration = Date.now() - pauseStartTime;
-    player.startTime += pauseDuration;  // 開始時刻を一時停止時間分ずらす
-    update(); // ゲーム更新を再開
-    document.getElementById("pauseButton").innerText = "⏸"; //  ボタンのテキストをPauseに戻す
-    play_bgm(bgm_sound);
-  }
-}
-
 function showPlayScreen() {
   document.getElementById("startScreen").style.display = "none"; // スタート画面非表示
   document.getElementById("playScreen").style.display = "flex"; // プレイ画面をflexで表示
@@ -1247,6 +1152,58 @@ function showStartScreen() {
   document.getElementById("startScreen").style.display = "flex"; // プレイ画面をflexで表示
   document.getElementById("playScreen").style.display = "none"; // スタート画面非表示
 }
+
+/*
+衝突判定と位置計算
+----------------------------------------*/
+
+function collide(arena, player) {
+  const [m, o] = [player.matrix, player.pos];
+  for (let y = 0; y < m.length; y++) {
+    for (let x = 0; x < m[y].length; x++) {
+      if (m[y][x] !== 0 && (arena[y + o.y] && arena[y + o.y][x + o.x]) !== 0) { // 要確認
+        return true
+      }
+    }
+  }
+  return false
+}
+
+function merge(arena, player) {
+  player.matrix.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value !== 0) {
+        arena[y + player.pos.y][x + player.pos.x] = value;
+      }
+    })
+  })
+  play_sounds(drop_sound)
+}
+
+function ghostTetrimono() { //ゴーストの表示位置を設定する
+  ghost.matrix = player.matrix;
+  ghost.pos.x = player.pos.x;
+  ghost.pos.y = player.pos.y
+  while (!collide(arena, ghost)) ghost.pos.y++;
+  while (collide(arena, ghost)) ghost.pos.y--;
+}
+
+/*
+初期化とイベントリスナー
+----------------------------------------*/
+
+//画像読込
+async function load_image(path) {
+  const t_img = new Image();
+  return new Promise(
+    (resolve) => {
+      t_img.onload = () => {
+        resolve(t_img);
+      }
+      t_img.src = path;
+    }
+  )
+};
 
 const loading = async () => {
   try {
@@ -1292,5 +1249,52 @@ const loading = async () => {
     console.log(err);
   }
 }
+
+document.addEventListener('keydown', (event) => {
+  if (!gameActive) return;
+  switch (event.key) {
+    case 'ArrowLeft':
+      playerMove(-1);
+      break;
+    case 'ArrowRight':
+      playerMove(1);
+      break;
+    case 'ArrowDown':
+      playerDrop();
+      break;
+    // ハードドロップと回転を入れる
+    case 'ArrowUp':
+      playerHardDrop();
+      break;
+    case ' ': // スペースを押した時の処理
+      let new_tetro = rotate(player.matrix)// 回転後のテトリミノの描画情報new_tetro
+      // 回転後のテトリミノの描画位置が他のミノの衝突しない場合のみ、現在のテトロミノの描画を変更する
+      if (collision_on_rotate(player.pos.x, player.pos.y, new_tetro)) {
+        afterRotate(new_tetro);
+      } else { // 通常の動作で回転できない時SRSで判定する
+        clockwisSrs(player.current_tetro_type);
+      }
+      break;
+    case 'Shift': // Shiftを押した時の処理
+      if (gameActive) {
+        if (!player.hold_used) {
+          player_reset_after_hold();
+        }
+      }
+      break;
+  }
+});
+
+document.getElementById('restartButton').addEventListener('click', restartGame);
+document.getElementById('homeButton').addEventListener('click', restartGame);
+document.getElementById('start').addEventListener('click', gameStart);
+document.getElementById("pauseButton").addEventListener("click", function () {
+  pauseGame();
+  document.getElementById("pauseButton").blur(); // ボタンからフォーカスを外す 
+})
+
+/*
+ゲーム開始
+----------------------------------------*/
 
 loading();
