@@ -3,7 +3,7 @@ body {
 }
 
 .container button { /*スタート、一時停止・再開、リスタートボタン共通の設定*/
-    width: 100px;
+    width: 80px;
     height: 50px;
     margin-top: 160px;
     background: linear-gradient(to bottom, #00bfff, #007acc); /* 青いグラデーション */
@@ -20,9 +20,11 @@ body {
     align-items: center;
     justify-content: center; 
 }
+
 button:hover {
     background-color: gray;
 }
+
 button:active {
     box-shadow: 0 3px #333; /* 押し込んだように影を小さくする */
     transform: translateY(2px); /* ボタンを少し下に動かす */
@@ -149,8 +151,8 @@ button:active {
 
 /* ゲームに関係するエリアの設定 */
 .gameContainer {
-    width: 600px;
     height: 650px;
+    width: 600px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -182,10 +184,13 @@ button:active {
 }
 
 .stats {
-    width: 100px;
     height: 280px;
+    width: 100px;
     border: 3px solid rgb(51, 98, 194); 
     border-radius: 8px;
+    /* margin: 50px 0 50px 0; */
+    margin-top: 14px;
+    /* padding: 20px 0 20px 0; */
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -207,7 +212,34 @@ button:active {
     display: flex;
     justify-content: center;
     margin-top: -10px;
-    padding-bottom: 7px
+    margin-bottom: 7px;
+}
+#level {
+  color: white;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 7px;
+}
+
+#lines {
+  color: white;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 7px;
+}
+
+
+#highScore {
+    color: white;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 7px;
+}
+#playTime {
+    color: white;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 7px;
 }
 
 #level {
@@ -285,7 +317,6 @@ button:active {
     height: 50px;
     width: 100px;
     margin-top: 30px;
-    margin-bottom: 14px;
     color: white;
     font-size: 25px;
     font-weight: bold;
@@ -300,10 +331,10 @@ button:active {
 #restartButton {
     /* display: block; */
     display: none; /* ゲーム起動時は非表示 */
-    height:50px;
+    height: 50px;
     width: 100px;
     margin-top: 30px;
-    margin-bottom: 14px;
+    /* margin-bottom: 30px; */
     color: white;
     font-size: 25px;
     font-weight: bold;
