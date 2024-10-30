@@ -1097,7 +1097,7 @@ function gameStart() {
   // document.getElementById('startButton').style.display = 'block'; // スタートボタンを表示
   drawGameStart(); // ゲームオーバー表示を描画
   context.restore()
-  play_sounds(bgm_sound)
+  //play_sounds(bgm_sound)
 }
 
 // ミノがロックされ、新しいミノが表示された時点で呼び出して判定する。
@@ -1201,6 +1201,7 @@ function restartGame() {
   lastTime = 0;  // lastTimeもリセット
   player.startTime = Date.now();
   document.querySelector('#playTime').innerText = '0:00:00';
+  document.getElementById("pauseButton").innerText = "⏸"; //  ボタンのテキストをPauseに戻す
 
   // ゲームを再開
   update();
@@ -1211,7 +1212,7 @@ function restartGame() {
   // document.getElementById('startButton').style.display = 'none';
   // 一時停止・再開ボタンを表示する
   document.getElementById('pauseButton').style.display = 'block';
-  play_bgm(bgm_sound);
+  //play_bgm(bgm_sound);
 }
 
 function update() {
@@ -1288,7 +1289,7 @@ function showPlayScreen() {
 
 function showStartScreen() {
   document.getElementById("startScreen").style.display = "flex"; // プレイ画面をflexで表示
-  document.getElementById("playScreen").style.display = "none"; // スタート画面非表示/
+  document.getElementById("playScreen").style.display = "none"; // スタート画面非表示
 }
 
 const loading = async () => {

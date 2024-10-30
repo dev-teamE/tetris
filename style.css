@@ -20,9 +20,11 @@ body {
     align-items: center;
     justify-content: center; 
 }
+
 button:hover {
     background-color: gray;
 }
+
 button:active {
     box-shadow: 0 3px #333; /* 押し込んだように影を小さくする */
     transform: translateY(2px); /* ボタンを少し下に動かす */
@@ -192,6 +194,8 @@ button:active {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    margin-top: 14px; /* キャンバスとの間隔 */
+    margin-bottom: 0px; /* キャンバスとの間隔 */
 }
 
 .stat {
@@ -237,6 +241,33 @@ button:active {
     justify-content: center;
     margin-bottom: 7px;
 }
+
+#level {
+    color: white;
+    display: flex;
+    justify-content: center;
+    padding-bottom: 7px
+  }
+  
+  #lines {
+    color: white;
+    display: flex;
+    justify-content: center;
+    padding-bottom: 7px
+  }  
+
+#highScore{
+    color: white;
+    display: flex;
+    justify-content: center;
+    padding-bottom: 7px
+  }
+
+  #playTime{
+    color: white;
+    display: flex;
+    justify-content: center;
+  }
 
 #main-area {
     display: flex;
@@ -286,7 +317,6 @@ button:active {
     height: 50px;
     width: 100px;
     margin-top: 30px;
-    /* margin-bottom: 30px; */
     color: white;
     font-size: 25px;
     font-weight: bold;
@@ -322,7 +352,7 @@ button:active {
     width: 100px;
     margin-top: 30px;
     color: white;
-    font-size: 25px;
+    font-size: 30px;
     font-weight: bold;
     outline: none;
     border: none;
