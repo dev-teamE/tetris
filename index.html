@@ -52,18 +52,19 @@
                 <h3>Hold</h3>
                 <canvas class="box" id="hold_canvas" ></canvas>
                 <div class="stats">
-                    <h3 class="stat">Score: </h3>
+                    <h3 class="stat">Score</h3>
                     <span id="score">0</span>
-                    <h4 class="stat">Level:</h4>
+                    <h5 class="stat">Level</h4>
                     <span id="level">1</span>
-                    <h4 class="stat">Lines:</h4>
+                    <h5 class="stat">Lines</h4>
                     <span id="lines">0</span>
-                    <h4 class="stat">High Score: <br><span id="highScore">0</span></h4>
-                    <h4 class="stat">Time: <span id="playTime">0:00:00</span></span></h4>
+                    <h5 class="stat">High Score </h5>
+                    <span id="highScore">0</span></h4>
+                    <h5 class="stat">Time</h5>
+                    <span id="playTime">0:00:00</span>
                 </div>
                 <!-- <button id="startButton" >start</button> -->
                 <button id="pauseButton">⏸</button>
-                <button id="homeButton" onclick="showStartScreen()" >⌂</button>
                 <button id="restartButton">Restart</button>
             </div>
             <div class="area" id="main-area">
@@ -74,6 +75,7 @@
                 <h3>Next</h3>
                 <canvas class="box" id="nextPiece"></canvas>
                 <canvas class="box" id="followingPieces"></canvas>
+                <button id="homeButton" onclick="showStartScreen()" >⌂</button>
             </div>
         </div>
     </div>

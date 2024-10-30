@@ -3,7 +3,7 @@ body {
 }
 
 .container button { /*スタート、一時停止・再開、リスタートボタン共通の設定*/
-    width: 120px;
+    width: 80px;
     height: 50px;
     margin-top: 160px;
     background: linear-gradient(to bottom, #00bfff, #007acc); /* 青いグラデーション */
@@ -149,8 +149,8 @@ button:active {
 
 /* ゲームに関係するエリアの設定 */
 .gameContainer {
-    height: 90%;
-    width: 50%;
+    height: 650px;
+    width: 600px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -182,11 +182,13 @@ button:active {
 }
 
 .stats {
-    width: 120px;
+    height: 280px;
+    width: 100px;
     border: 3px solid rgb(51, 98, 194); 
     border-radius: 8px;
-    margin: 50px 0 50px 0;
-    padding: 20px 0 20px 0;
+    /* margin: 50px 0 50px 0; */
+    margin-top: 14px;
+    /* padding: 20px 0 20px 0; */
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -199,26 +201,41 @@ button:active {
     justify-content: center;
 }
 
+#score {
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    margin-top: -10px;
+    margin-bottom: 7px;
+}
 #level {
   color: white;
   display: flex;
   justify-content: center;
-  margin-bottom: 5px;
+  margin-bottom: 7px;
 }
 
 #lines {
   color: white;
   display: flex;
   justify-content: center;
+  margin-bottom: 7px;
 }
 
-#score {
+
+#highScore {
     color: white;
-    font-size: 22px;
-    font-weight: bold;
     display: flex;
     justify-content: center;
-    margin-top: -10px;
+    margin-bottom: 7px;
+}
+#playTime {
+    color: white;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 7px;
 }
 
 #main-area {
@@ -267,8 +284,9 @@ button:active {
 
 #pauseButton {
     height: 50px;
-    width: 120px;
-    margin-bottom: 30px;
+    width: 100px;
+    margin-top: 30px;
+    /* margin-bottom: 30px; */
     color: white;
     font-size: 25px;
     font-weight: bold;
@@ -283,9 +301,10 @@ button:active {
 #restartButton {
     /* display: block; */
     display: none; /* ゲーム起動時は非表示 */
-    height:60px;
-    width: 120px;
-    margin-bottom: 30px;
+    height: 50px;
+    width: 100px;
+    margin-top: 30px;
+    /* margin-bottom: 30px; */
     color: white;
     font-size: 25px;
     font-weight: bold;
@@ -299,9 +318,9 @@ button:active {
 
 #homeButton {
     /* display: none; ゲーム起動時は非表示 */
-    height: 60px;
-    width: 120px;
-    margin-bottom: 30px;
+    height: 50px;
+    width: 100px;
+    margin-top: 30px;
     color: white;
     font-size: 25px;
     font-weight: bold;

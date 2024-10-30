@@ -966,8 +966,7 @@ function saveHighScores(newScore) {
       score: newScore,
       date: new Date().toLocaleDateString(),
       level: player.level,
-      lines: player.totalLines,
-      playTime: playTimeInSeconds
+      lines: player.totalLines
   });
   
   // スコアで降順ソート
@@ -1267,7 +1266,7 @@ function pauseGame(){
     // 一時停止処理
     gameActive = false;
     cancelAnimationFrame(animationId); // アニメーションフレームの停止
-    document.getElementById("pauseButton").innerText = "Resume"; // ボタンのテキストを「Resume」に変更
+    document.getElementById("pauseButton").innerText = "▷"; // ボタンのテキストを「Resume」に変更
     pause_bgm(bgm_sound);
     pauseStartTime = Date.now();
   } else {
