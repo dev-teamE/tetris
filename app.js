@@ -140,7 +140,7 @@ class CanvasNext {
     
     // メインの次のピースを描画
     if (pieces.length > 0) {
-      this.mainNext.drawTetro(pieces[0]);
+      this.mainNext.drawTetro(pieces[0], 1);
     }
     
     // 後続のピースを描画（サイズを0.7倍に縮小）
@@ -573,6 +573,10 @@ const player = {
   maxCombo: 0,
   lastClearWasTetris: false,
   backToBackActive: false,
+  highScore: 0,
+  isHighScore: false,
+  playTime: 0,
+  startTime: null // ゲーム開始時刻
 };
 
 const ghost = {
@@ -777,7 +781,6 @@ document.addEventListener('keydown', (event) => {
   }
 });
 
-
 /*
 2. ライン消去とスコアシステム
 ———————————–*/
@@ -884,6 +887,62 @@ function arenaSweep() {
   }
 }
 
+// プレイ時間を計算（秒単位）
+function getPlayTimeInSeconds() {
+  if (!gameActive || !player.startTime) return 0;
+  return Math.floor((Date.now() - player.startTime) / 1000);
+}
+
+function formatTime(seconds) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+  
+  return `${hours}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
+// スコアを保存する関数
+function saveHighScores(newScore) {
+  let highScores = localStorage.getItem('tetrisHighScores');
+
+  // localStorageは配列が保存できないので、JSON.stringifyで文字列に変換して保存。parseで配列に戻す
+  if (!highScores) {
+      highScores = [];
+  } else {
+      highScores = JSON.parse(highScores);
+  }
+
+  // スコアを保存する関数
+  highScores.push({
+      score: newScore,
+      date: new Date().toLocaleDateString(),
+      level: player.level,
+      lines: player.totalLines,
+      playTime: playTimeInSeconds
+  });
+  
+  // スコアで降順ソート
+  highScores.sort((a, b) => b.score - a.score);
+  
+  // 上位10件のみ保持
+  highScores = highScores.slice(0, 10);
+  
+  // 保存
+  localStorage.setItem('tetrisHighScores', JSON.stringify(highScores));
+}
+
+// 1位のスコアのみを取得する関数
+function getTopScore() {
+  const scores = getAllHighScores();
+  return scores.length > 0 ? scores[0].score : 0;
+}
+
+// 全てのハイスコアを取得する関数（スコアボード実装時のため）
+function getAllHighScores() {
+  const highScores = localStorage.getItem('tetrisHighScores');
+  return highScores ? JSON.parse(highScores) : [];
+}
+
 // スコアを更新する関数
 function updateScore() {
   // スコアをHTMLドキュメントの#score要素に反映
@@ -892,6 +951,18 @@ function updateScore() {
   /// player.scoreの値を画面に反映させる
   document.querySelector('#score').innerText = player.score;
   document.querySelector('#lines').innerText = player.totalLines;
+
+  // スコアがハイスコアを超えた場合
+  if (player.score > player.highScore) {
+    saveHighScores(player.score);  // 保存
+    player.highScore = getTopScore();  // 1位のスコアを取得
+    player.isHighScore = true;
+  }
+
+  /*
+  // ハイスコア表示を更新
+  document.querySelector('#highScore').innerText = player.highScore;
+  */
 }
 
 const baseSpeed = 1000; // 基準速度: 1秒 = 1000ミリ秒
@@ -927,6 +998,20 @@ function updateLevel() {
   document.querySelector('#level').innerText = player.level;
 }
 
+// プレイ時間の表示を更新する関数
+function updatePlayTime() {
+  document.querySelector('#playTime').innerText = formatTime(getPlayTimeInSeconds());
+}
+
+// 最短クリア時間の表示（マラソンモードの実装用）
+function displayBestTime() {
+  const scores = getAllHighScores();
+  if (scores.length === 0) return "No records";
+  
+  const bestTime = Math.min(...scores.map(s => s.playTime));
+  return formatTime(bestTime);
+}
+
 // arenaSweep()とupdateScore()は、ピースをロックする関数に組み込む
 // 未実装：コンボ、ハードドロップによるボーナス
 
@@ -947,16 +1032,22 @@ let gameActive = true;    // ゲームの状態を管理するためのグロー
 
 // ゲームオーバー時の処理、アニメーションを停止し、リスタートボタンを表示
 function gameOver() {
+  const finalPlayTime = getPlayTimeInSeconds();
+  
   gameActive = false; // ゲームの状態を非アクティブに設定
   cancelAnimationFrame(animationId); // ゲームループを停止
   document.getElementById('pauseButton').style.display = 'none'; // 一時停止、再開ボタンを非表示にする
   document.getElementById('restartButton').style.display = 'block'; // リスタートボタンを表示
-  drawGameOver();  // ゲームオーバー表示を描画
+  drawGameOver(finalPlayTime);
+
+  if (player.score > player.highScore) {
+    saveHighScores(player.score);
+  }
 }
 
 function gameStart() {
   document.getElementById('startButton').style.display = 'block'; // スタートボタンを表示
-  drawGameStart(); // ゲームオーバー表示を描画
+  drawGameStart(); // ゲームスタート表示を描画
   context.restore()
   play_sounds(bgm_sound)
 }
@@ -966,7 +1057,7 @@ function gameStart() {
 
 // ゲームオーバー画面の描画
 // canvasが二つに増えたため、グローバルのcanvas（Tetris）を指定。（将来的にはクラスで分けたい）
-function drawGameOver() {
+function drawGameOver(finalPlayTime) {
   context.save();  // 現在の描画状態を保存
   context.setTransform(1, 0, 0, 1, 0, 0);
   context.fillStyle = 'rgba(0, 0, 0, 0.75)';
@@ -975,17 +1066,32 @@ function drawGameOver() {
   context.fillStyle = '#FF0000';
   context.font = 'bold 30px Arial';
   context.textAlign = 'center';
-  context.textBaseline = 'middle';
+  context.textBaseline = 'bottom';
   context.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 30);
 
+  const timeString = formatTime(finalPlayTime);
+  
   context.fillStyle = '#FFFFFF';
   context.font = '24px Arial';
   context.fillText(`Score: ${player.score}`, canvas.width / 2, canvas.height / 2 + 10);
-  context.fillText(`Level: ${player.level}`, canvas.width / 2, canvas.height / 2 + 40);
-  context.fillText(`Lines: ${player.totalLines}`, canvas.width / 2, canvas.height / 2 + 70);
+  
+  if (player.isHighScore) {
+    context.fillStyle = '#00FF00';
+    context.fillText(`NEW!!`, canvas.width / 2, canvas.height / 2 + 40);
+  } else {
+    context.fillStyle = '#FFFFFF';
+    context.fillText(`Best: ${player.highScore}`, canvas.width / 2, canvas.height / 2 + 40);
+  }
 
+  context.fillStyle = '#FFFFFF';
+  context.fillText(`Level: ${player.level}`, canvas.width / 2, canvas.height / 2 + 70);
+  context.fillText(`Lines: ${player.totalLines}`, canvas.width / 2, canvas.height / 2 + 100);
+
+  /*
+  context.fillText(`Time: ${timeString}`, canvas.width / 2, canvas.height / 2 + 130);
+  */
+ 
   context.restore();  // 描画状態を元に戻す
-
 }
 
 // ゲームスタート画面の描画
@@ -1025,6 +1131,10 @@ function restartGame() {
   player.maxCombo = 0;
   player.lastClearWasTetris = false;
   player.backToBackActive = false;
+  player.startTime = Date.now();  // ゲーム開始時刻を記録
+  player.highScore = getTopScore();
+  player.isHighScore = false;
+
   // 落下速度をリセット
   dropInterval = calculateDropInterval(player.level);
   // ホールドしているテトロミノをリセット
@@ -1040,8 +1150,12 @@ function restartGame() {
   // アニメーションのタイマーをリセット
   currentTime = 0;
   lastTime = 0;  // lastTimeもリセット
+  player.startTime = Date.now();
+  document.querySelector('#playTime').innerText = '0:00:00';
+
   // ゲームを再開
   update();
+
   // リスタートボタンを非表示にする
   document.getElementById('restartButton').style.display = 'none';
   document.getElementById('startButton').style.display = 'none';
@@ -1064,6 +1178,7 @@ function update() {
 
       lastTime = currentTime;
     }
+    updatePlayTime();
     draw() 
   }
   animationId = requestAnimationFrame(update)
@@ -1080,6 +1195,9 @@ document.getElementById("pauseButton").addEventListener("click", function(){
   pauseGame();
   document.getElementById("pauseButton").blur(); // ボタンからフォーカスを外す 
 })
+
+let pauseStartTime = null;
+
 // 一時停止・再開の処理
 function pauseGame(){
   if (gameActive) {
@@ -1088,9 +1206,12 @@ function pauseGame(){
     cancelAnimationFrame(animationId); // アニメーションフレームの停止
     document.getElementById("pauseButton").innerText = "Resume"; // ボタンのテキストを「Resume」に変更
     pause_bgm(bgm_sound);
+    pauseStartTime = Date.now();
   } else {
     // ゲームを再開
     gameActive = true;
+    const pauseDuration = Date.now() - pauseStartTime;
+    player.startTime += pauseDuration;  // 開始時刻を一時停止時間分ずらす
     update(); // ゲーム更新を再開
     document.getElementById("pauseButton").innerText = "Pause"; //  ボタンのテキストをPauseに戻す
     play_bgm(bgm_sound);
@@ -1128,6 +1249,12 @@ const loading = async () => {
     canvasHold = new CanvasHold();
     canvasNext = new CanvasNext();
     
+    // ハイスコアの初期読み込みと表示
+    player.highScore = getTopScore();
+    /*
+    document.querySelector('#highScore').innerText = player.highScore;
+    */
+
     // 初期表示
     gameStart();
     drawNextPieces(); // Next表示の初期化

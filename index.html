@@ -17,13 +17,16 @@
                 <canvas class="box" id="hold_canvas"></canvas>
                 <h4 class="stats-row">Level: <span id="level">1</span></h4>
                 <h4 class="stats-row">Lines: <span id="lines">0</span></h4>
+                <h4 class="stats-row">Score: <span id="score">0</span></h4>
+                <!-- <h4 class="stats-row">High Score: <br><span id="highScore">0</span></h4> -->
+                <h4 class="stats-row">Time: <span id="playTime">0:00:00</span></span></h4>
                 <button id="startButton">start</button>
                 <button id="pauseButton">Pause</button>
                 <button id="restartButton">Restart</button>
             </div>
             <div class="area" id="main-area">
                 <div id="scoreBoard">
-                    <h3>Score: <span id="score">0</span></h3>
+                    <h3 id="gameMode">Score Attack</h3>
                 </div>
                 <canvas class="box" id="tetris" width="250" height="500"></canvas>
             </div>
