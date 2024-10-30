@@ -1206,6 +1206,7 @@ function restartGame() {
   update();
 
   // リスタートボタンを非表示にする
+  document.getElementById("pauseButton").innerText = "⏸"; //  ボタンのテキストをPauseに戻す
   document.getElementById('restartButton').style.display = 'none';
   // document.getElementById('startButton').style.display = 'none';
   // 一時停止・再開ボタンを表示する
