@@ -8,26 +8,66 @@
     <link rel="stylesheet" href="style.css">
 </head>
 
-<body> 
-    <div class="container">
-        <div id="logo"><img src="./assets/images/Tetrislogo.png" alt="#" class="large-image"></div>
-        <div id="game-container">
-            <div class="area" id="hold-area">
+<body>
+    <!-- スタート画面 -->
+    <div class="startScreen" id="startScreen">
+        <div class="startContainer">
+            <img class="logoImg" src="./assets/images/Tetrislogo.png" >
+            <div class="modeContainer">
+                <div class="startButtons">
+                    <button class="startButton" id="start" onclick="showPlayScreen()">Play</button>
+                    <button class="selectButton">Select Mode</button>
+                </div>  
+                <div class="settingButtons">
+                    <button class="settingButton">Setting</button>
+                    <button class="howToButton">How To Play</button>   
+                </div>
+            </div>
+        </div>
+        <!-- スコア画面あったら？（ローカルにスコアを保存） -->
+    </div>
+    <!-- ゲームモード選択画面 -->
+    <div class="startScreen" style="display:none">
+        <div class="startContainer">
+            <img class="logoImg" src="./assets/images/Tetrislogo.png" >
+            <div class="modeContainer">
+                <div class="startButtons">
+                    <button class="startButton">Play</button>
+                    <button class="selectButton">Select Mode</button>
+                </div>  
+                <div class="settingButtons">
+                    <button class="settingButton">Setting</button>
+                    <button class="howToButton">How To Play</button>   
+                </div>
+            </div>
+        </div>
+        <!-- スコア画面あったら？（ローカルにスコアを保存） -->
+    </div>
+    <!-- 設定画面 -->
+    <!--操作方法 -->
+    <!-- プレイ画面 -->
+    <div class="playScreen" id="playScreen" style="display: none;">
+        <div class="gameContainer">
+            <div class="area hold-area">
                 <h3>Hold</h3>
-                <canvas class="box" id="hold_canvas"></canvas>
-                <h4 class="stats-row">Level: <span id="level">1</span></h4>
-                <h4 class="stats-row">Lines: <span id="lines">0</span></h4>
-                <h4 class="stats-row">Score: <span id="score">0</span></h4>
-                <!-- <h4 class="stats-row">High Score: <br><span id="highScore">0</span></h4> -->
-                <h4 class="stats-row">Time: <span id="playTime">0:00:00</span></span></h4>
-                <button id="startButton">start</button>
-                <button id="pauseButton">Pause</button>
+                <canvas class="box" id="hold_canvas" ></canvas>
+                <div class="stats">
+                    <h3 class="stat">Score: </h3>
+                    <span id="score">0</span>
+                    <h4 class="stat">Level:</h4>
+                    <span id="level">1</span>
+                    <h4 class="stat">Lines:</h4>
+                    <span id="lines">0</span>
+                    <h4 class="stat">High Score: <br><span id="highScore">0</span></h4>
+                    <h4 class="stat">Time: <span id="playTime">0:00:00</span></span></h4>
+                </div>
+                <!-- <button id="startButton" >start</button> -->
+                <button id="pauseButton">⏸</button>
+                <button id="homeButton" onclick="showStartScreen()" >⌂</button>
                 <button id="restartButton">Restart</button>
             </div>
             <div class="area" id="main-area">
-                <div id="scoreBoard">
-                    <h3 id="gameMode">Score Attack</h3>
-                </div>
+                <span id="gameMode">Score Attack</span>
                 <canvas class="box" id="tetris" width="250" height="500"></canvas>
             </div>
             <div class="area" id="next-area">
@@ -36,8 +76,23 @@
                 <canvas class="box" id="followingPieces"></canvas>
             </div>
         </div>
-      </div>
     </div>
     <script src="./app.js" type ="module"></script>
+    <script>
+        // DOM読み込み後に実行する関数
+        document.addEventListener("DOMContentLoaded", () => {
+            window.showPlayScreen = function() {
+                document.getElementById("startScreen").style.display = "none";
+                document.getElementById("playScreen").style.display = "flex";
+            };
+        });
+        document.addEventListener("DOMContentLoaded", () => {
+            window.showStartScreen = function() {
+                document.getElementById("startScreen").style.display = "flex";
+                document.getElementById("playScreen").style.display = "none";
+                restartGame() 
+            };
+        });
+    </script>
 </body>
 </html>

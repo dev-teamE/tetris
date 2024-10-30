@@ -659,7 +659,6 @@ nextPieces = generateSevenBag();
 NEXT表示システム
 ———————————–*/
 
-
 function collide(arena, player){
   const [m, o] = [player.matrix, player.pos];
   for (let y = 0; y < m.length; y++){
@@ -739,8 +738,7 @@ function playerHardDrop() {
   // arenaSweep()
   updateScore()
   player.hold_used = false;
-  currentTime = 0
-  
+  currentTime = 0;
 }
 
 
@@ -1046,8 +1044,8 @@ function gameOver() {
 }
 
 function gameStart() {
-  document.getElementById('startButton').style.display = 'block'; // スタートボタンを表示
-  drawGameStart(); // ゲームスタート表示を描画
+  // document.getElementById('startButton').style.display = 'block'; // スタートボタンを表示
+  drawGameStart(); // ゲームオーバー表示を描画
   context.restore()
   play_sounds(bgm_sound)
 }
@@ -1114,6 +1112,7 @@ function drawGameStart() {
   context.fillText('Press Start to Play!', canvas.width / 2, canvas.height / 2 + 20);
 
   context.restore();
+  restartGame()
 }
 
 function restartGame() {
@@ -1158,7 +1157,7 @@ function restartGame() {
 
   // リスタートボタンを非表示にする
   document.getElementById('restartButton').style.display = 'none';
-  document.getElementById('startButton').style.display = 'none';
+  // document.getElementById('startButton').style.display = 'none';
   // 一時停止・再開ボタンを表示する
   document.getElementById('pauseButton').style.display = 'block';
   play_bgm(bgm_sound);
@@ -1187,7 +1186,9 @@ function update() {
 
 // リスタートボタンがクリックされたときにrestartGame関数を実行
 document.getElementById('restartButton').addEventListener('click', restartGame);
-document.getElementById('startButton').addEventListener('click', restartGame);
+// document.getElementById('startButton').addEventListener('click', restartGame);
+document.getElementById('homeButton').addEventListener('click', restartGame);
+document.getElementById('start').addEventListener('click', gameStart);
 
 
 // 一時停止・再開ボタン
@@ -1213,9 +1214,19 @@ function pauseGame(){
     const pauseDuration = Date.now() - pauseStartTime;
     player.startTime += pauseDuration;  // 開始時刻を一時停止時間分ずらす
     update(); // ゲーム更新を再開
-    document.getElementById("pauseButton").innerText = "Pause"; //  ボタンのテキストをPauseに戻す
+    document.getElementById("pauseButton").innerText = "⏸"; //  ボタンのテキストをPauseに戻す
     play_bgm(bgm_sound);
   }
+}
+
+function showPlayScreen() {
+  document.getElementById("startScreen").style.display = "none"; // スタート画面非表示
+  document.getElementById("playScreen").style.display = "flex"; // プレイ画面をflexで表示
+}
+
+function showStartScreen() {
+  document.getElementById("startScreen").style.display = "flex"; // プレイ画面をflexで表示
+  document.getElementById("playScreen").style.display = "none"; // スタート画面非表示/
 }
 
 const loading = async () => {
