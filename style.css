@@ -28,16 +28,6 @@ button:active {
     transform: translateY(2px); /* ボタンを少し下に動かす */
 }
 
-/* #tetris {
-    border: 1px solid #fff;
-} */
-/* 
-#scoreBoard {
-    color: #fff;
-    font-size: 20px;
-    margin-bottom: 10px;
-} */
-
 #restartButton {
     /* display: block; */
     display: none; /* ゲーム起動時は非表示 */
@@ -48,48 +38,9 @@ button:active {
     display: none; /* ゲーム起動時は非表示 */
 }
 #pauseButton {
-    /* display: block; */
-    display: none; /* ゲーム起動時は非表示 */
+    display: block;
+    /* display: none; ゲーム起動時は非表示 */
 }
-
-#next-area {
-    display: flex;
-    flex-direction: column; /* 見出しとキャンバスを縦並びに */
-    align-items: center; /*小要素を中央揃え*/
-    margin-left: 30px; /* メインエリアとの間隔 */
-}
-
-#next-area h3 {
-    color: #fff;
-    margin: 0; /* デフォルトマージンをリセット */
-    margin-top: 40px;
-    margin-bottom: 10px; /* キャンバスとの間隔 */
-}
-
-#nextPieces {
-    display: flex;
-    flex-direction: column; /* 見出しとキャンバスを縦並びに */
-}
-
-#nextPiece {
-    /* border: 1px solid #fff; */
-    margin-bottom: 14px; /* キャンバスとの間隔 */
-}
-
-/* #followingPieces {
-    border: 1px solid #fff;
-}*/
-
-/* スコアボードのスタイルを更新 */
-/* #scoreBoard {
-    color: #fff;
-    font-size: 20px;
-    margin-bottom: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-} */
 
 .startScreen {
     height: 100vh;
@@ -210,10 +161,11 @@ button:active {
     position: relative; /* 子要素がぼかし効果の上に表示されるようにする */
     z-index: 1; /* 子要素を前面に表示 */
 }
+
 /* game-containerの各要素の配置を統一するため、各要素の高さを指定 */
 .area {
     height: 90%;
-    margin-top: 20px;
+    margin-top: 30px;
 }
 
 .hold-area {
@@ -226,7 +178,6 @@ button:active {
 .hold-area h3 {
     color: #fff;
     margin: 0; /* デフォルトマージンをリセット */
-    margin-top: 40px;
     margin-bottom: 10px; /* キャンバスとの間隔 */
 }
 
@@ -261,17 +212,49 @@ button:active {
   justify-content: center;
 }
 
+#score {
+    color: white;
+    font-size: 22px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    margin-top: -10px;
+}
+
 #main-area {
     display: flex;
     flex-direction: column; /* スコア、キャンバス、ボタンを縦並びに */
     align-items: center; /* 子要素を中央揃え */
 }
 
-#scoreBoard h3 {
+#gameMode {
+    color: mediumseagreen;
+    font-size: 25px;
+    font-weight: bold;
+    margin-bottom: 3px;
+}
+
+#next-area {
+    display: flex;
+    flex-direction: column; /* 見出しとキャンバスを縦並びに */
+    align-items: center; /*小要素を中央揃え*/
+    margin-left: 30px; /* メインエリアとの間隔 */
+}
+
+#next-area h3 {
     color: #fff;
     margin: 0; /* デフォルトマージンをリセット */
-    margin-top: 2px;
     margin-bottom: 10px; /* キャンバスとの間隔 */
+}
+
+#nextPieces {
+    display: flex;
+    flex-direction: column; /* 見出しとキャンバスを縦並びに */
+}
+
+#nextPiece {
+    /* border: 1px solid #fff; */
+    margin-bottom: 14px; /* キャンバスとの間隔 */
 }
 
 /* ホールドエリア、プレイエリア、ネクストエリアのcanvasのエリアの設定 */
@@ -280,4 +263,52 @@ button:active {
     border: 3px solid rgb(51, 98, 194); /*一番内側の枠線*/
     border-radius: 8px;
 
+}
+
+#pauseButton {
+    height: 50px;
+    width: 120px;
+    margin-bottom: 30px;
+    color: white;
+    font-size: 25px;
+    font-weight: bold;
+    outline: none;
+    border: none;
+    border-radius: 30px; 
+    background: linear-gradient(to bottom, #808080, #666666); /* 青いグラデーション */ 
+    box-shadow: 0 5px #333, 0 10px 15px rgba(0, 0, 0, 0.2); /* 立体感を出す影 */
+    cursor: pointer;
+}
+
+#restartButton {
+    /* display: block; */
+    display: none; /* ゲーム起動時は非表示 */
+    height:60px;
+    width: 120px;
+    margin-bottom: 30px;
+    color: white;
+    font-size: 25px;
+    font-weight: bold;
+    outline: none;
+    border: none;
+    border-radius: 30px; 
+    background: linear-gradient(to bottom, #00bfff, #007acc); /* 青いグラデーション */
+    box-shadow: 0 5px #333, 0 10px 15px rgba(0, 0, 0, 0.2); /* 立体感を出す影 */
+    cursor: pointer;
+}
+
+#homeButton {
+    /* display: none; ゲーム起動時は非表示 */
+    height: 60px;
+    width: 120px;
+    margin-bottom: 30px;
+    color: white;
+    font-size: 25px;
+    font-weight: bold;
+    outline: none;
+    border: none;
+    border-radius: 30px; 
+    background: linear-gradient(to bottom, #00bfff, #007acc); /* 青いグラデーション */
+    box-shadow: 0 5px #333, 0 10px 15px rgba(0, 0, 0, 0.2); /* 立体感を出す影 */
+    cursor: pointer;
 }
