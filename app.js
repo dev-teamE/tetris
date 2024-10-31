@@ -45,7 +45,7 @@ context.scale(25, 25);
 // プレイヤー情報
 const player = {
   pos: { x: 0, y: 0 },
-  current_tetro_type: null, // プレイヤー情報として現在のテトロミノの形の情報を持つように修正
+  current_tetro_type: null,
   rotation: 0, // 現在のミノの回転状況
   hold_tetro_type: null,
   hold_used: false, // １回の落下中にホールド機能を利用したかどうかの状態
@@ -66,7 +66,7 @@ const player = {
   highScore: 0,
   isHighScore: false,
   playTime: 0,
-  startTime: null // ゲーム開始時刻
+  startTime: null
 };
 
 // ゴーストの情報
@@ -322,27 +322,6 @@ function drawGameOver(finalPlayTime) {
   }
 
   context.restore();  // 描画状態を元に戻す
-}
-
-// ゲームスタート画面の描画
-function drawGameStart() {
-  context.save();  // 現在の描画状態を保存
-  context.setTransform(1, 0, 0, 1, 0, 0);
-  context.fillStyle = 'rgba(0, 0, 0, 0.75)';
-  context.fillRect(0, 0, canvas.width, canvas.height);
-
-  context.fillStyle = '#00FF00';
-  context.font = 'bold 36px Arial';
-  context.textAlign = 'center';
-  context.textBaseline = 'middle';
-  context.fillText('TETRIS', canvas.width / 2, canvas.height / 2 - 30);
-
-  context.fillStyle = '#FFFFFF';
-  context.font = '18px Arial';
-  context.fillText('Press Start to Play!', canvas.width / 2, canvas.height / 2 + 20);
-
-  context.restore();
-  restartGame()
 }
 
 /*
@@ -1017,7 +996,7 @@ function displayBestTime() {
 ----------------------------------------*/
 
 function gameStart() {
-  drawGameStart(); // ゲームオーバー表示を描画
+  restartGame()
   context.restore()
   play_sounds(bgm_sound)
 }
