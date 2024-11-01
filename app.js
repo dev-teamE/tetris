@@ -2,47 +2,33 @@
 インポートと定数の定義
 ----------------------------------------*/
 
-import { load_sounds, pause_bgm, play_bgm, play_sounds } from "./audio.js";
+import { Sound, load_sounds, pause_bgm, play_bgm, play_sounds} from "./classes/Sound.js";
 import { Canvas } from "./classes/Player.js";
+import { Game } from "./classes/Game.js";
 import { Player } from "./classes/Player.js";
 import { Tetoro } from "./classes/Player.js";
 
+// インスタンス化
+const game = new Game();
+const sound = new Sound();
+const player = new Player();
+const tetoro = new Tetoro();
 const mainCanvas = Canvas("mainCanvas", 20, 20, 10);
 const holdCanvas = Canvas("holdCanvas", 20, 5, 5);
 const nextCanvas = Canvas("nextCanvas", 20, 5, 5);
 const followingCanvas = Canvas("followingCanvas", 20, 14, 5);
 
-const tetoro = new Tetoro();
-
-// 定数の定義
-const baseSpeed = 1000; // 基準速度: 1秒 = 1000ミリ秒
-/*
-グローバル変数の定義
-----------------------------------------*/
-
-let bgm_sound, drop_sound, hold_sound, clear_sound, move_sound, rotate_sound;
-let dropInterval
-let currentTime;
-let lastTime = 0;
-let animationId;
-let gameActive = true;
-let pauseStartTime = null;
-
-// インスタンス化
-
 /*
 プレーヤーとゲーム状態の定義
 ----------------------------------------*/
 
-/* 今後移動する
+/* 今後移動・削除する
 // Canvasの初期設定
 const canvas = document.querySelector("#tetris");
 const context = canvas.getContext("2d");
 context.scale(25, 25);
-*/
-
-// アリーナ
 const arena = Array.from({ length: 20 }, () => Array(10).fill(0));
+*/
 
 /*
 Canvas関連のクラス定義
