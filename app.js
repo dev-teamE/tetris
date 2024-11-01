@@ -37,6 +37,7 @@ let pauseStartTime = null;
 // インスタンス化
 const game = new Game();
 const sound = new Sound();
+const player = new Player();
 /*
 プレーヤーとゲーム状態の定義
 ----------------------------------------*/
