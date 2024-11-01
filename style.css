@@ -309,13 +309,14 @@ button:active {
     /* キャンバスとの間隔 */
 }
 
+/* おそらく不要
 #nextPieces {
     display: flex;
     flex-direction: column;
-    /* 見出しとキャンバスを縦並びに */
 }
+*/
 
-#nextPiece {
+#nextCanvas {
     /* border: 1px solid #fff; */
     margin-bottom: 14px;
     /* キャンバスとの間隔 */

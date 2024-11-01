@@ -3,29 +3,25 @@
 ----------------------------------------*/
 
 import { load_sounds, pause_bgm, play_bgm, play_sounds } from "./audio.js";
+import { Canvas } from "./classes/Player.js";
 import { Player } from "./classes/Player.js";
+import { Tetoro } from "./classes/Player.js";
+
+const mainCanvas = Canvas("mainCanvas", 20, 20, 10);
+const holdCanvas = Canvas("holdCanvas", 20, 5, 5);
+const nextCanvas = Canvas("nextCanvas", 20, 5, 5);
+const followingCanvas = Canvas("followingCanvas", 20, 14, 5);
+
+const tetoro = new Tetoro();
+
 // 定数の定義
 const baseSpeed = 1000; // 基準速度: 1秒 = 1000ミリ秒
-const tetrominoes = ['T', 'O', 'L', 'J', 'I', 'S', 'Z'];
-const colors = [
-  null,
-  [210, 66, 255],
-  [255, 229, 1],
-  [255, 165, 63],
-  [15, 75, 215],
-  [112, 226, 254],
-  [57, 231, 95],
-  [220, 0, 0],
-];
-
 /*
 グローバル変数の定義
 ----------------------------------------*/
 
-let screen, imgJ, imgS, imgI, imgL, imgT, imgZ, imgO, imgs;
 let bgm_sound, drop_sound, hold_sound, clear_sound, move_sound, rotate_sound;
-let new_tetro, field_row, field_col, current_tetro_size, dropInterval
-let canvasHold, canvasNext;
+let dropInterval
 let currentTime;
 let lastTime = 0;
 let animationId;
@@ -38,12 +34,12 @@ let pauseStartTime = null;
 プレーヤーとゲーム状態の定義
 ----------------------------------------*/
 
+/* 今後移動する
 // Canvasの初期設定
 const canvas = document.querySelector("#tetris");
 const context = canvas.getContext("2d");
 context.scale(25, 25);
-
-
+*/
 
 // アリーナ
 const arena = Array.from({ length: 20 }, () => Array(10).fill(0));
@@ -52,84 +48,58 @@ const arena = Array.from({ length: 20 }, () => Array(10).fill(0));
 Canvas関連のクラス定義
 ----------------------------------------*/
 
-class BaseCanvas {
-  constructor(canvasId, blockSize, row, col) {
-    this.canvas = document.getElementById(canvasId);
-    this.context = this.canvas.getContext("2d");
-    this.blockSize = blockSize;
-    this.row = row;
-    this.col = col;
-    this.initCanvas();
-  }
+// BaseCanvasから出した。NextとHoldのインスタンスに追加
+getTetroSize(matrix) {
+  const size = matrix.length * this.blockSize;
+  return size;
+}
 
-  canvasHeight() {
-    return this.blockSize * this.row;
-  }
+// BaseCanvasから出した。NextとHoldのインスタンスに追加
+drawTetro(tetroType, scale = 1) {
+  const matrix = createPiece(tetroType);
+  const pos = calculateDisplayPosition(tetroType, this.canvasWidth(), this.canvasHeight(), this.blockSize);
 
-  canvasWidth() {
-    return this.blockSize * this.col;
-  }
+  const tetroSize = this.getTetroSize(matrix);
+  const scaledSize = tetroSize * scale;
 
-  initCanvas() {
-    this.canvas.height = this.canvasHeight();
-    this.canvas.width = this.canvasWidth();
-  }
+  const offset = {
+    x: (this.canvasWidth() - scaledSize) / (2 * this.blockSize),
+    y: pos.y / this.blockSize
+  };
 
-  clearCanvas() {
-    this.context.fillStyle = "#000";
-    this.context.fillRect(0, 0, this.canvasWidth(), this.canvasHeight());
-  }
+  this.drawMatrix(matrix, offset, scale, tetroSize);
+}
 
-  getTetroSize(matrix) {
-    const size = matrix.length * this.blockSize;
-    return size;
-  }
+// BaseCanvasから出した。NextとHoldのインスタンスに追加
+drawMatrix(matrix, offset, scale = 1, tetroSize) {
+  const tempCanvas = document.createElement('canvas');
+  const tempCtx = tempCanvas.getContext('2d');
 
-  drawTetro(tetroType, scale = 1) {
-    const matrix = createPiece(tetroType);
-    const pos = calculateDisplayPosition(tetroType, this.canvasWidth(), this.canvasHeight(), this.blockSize);
+  tempCanvas.width = tetroSize;
+  tempCanvas.height = tetroSize;
 
-    const tetroSize = this.getTetroSize(matrix);
-    const scaledSize = tetroSize * scale;
-
-    const offset = {
-      x: (this.canvasWidth() - scaledSize) / (2 * this.blockSize),
-      y: pos.y / this.blockSize
-    };
-
-    this.drawMatrix(matrix, offset, scale, tetroSize);
-  }
-
-  drawMatrix(matrix, offset, scale = 1, tetroSize) {
-    const tempCanvas = document.createElement('canvas');
-    const tempCtx = tempCanvas.getContext('2d');
-
-    tempCanvas.width = tetroSize;
-    tempCanvas.height = tetroSize;
-
-    matrix.forEach((row, y) => {
-      row.forEach((value, x) => {
-        if (value !== 0) {
-          tempCtx.drawImage(
-            imgs[value],
-            x * this.blockSize,
-            y * this.blockSize,
-            this.blockSize,
-            this.blockSize
-          );
-        }
-      });
+  matrix.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value !== 0) {
+        tempCtx.drawImage(
+          imgs[value],
+          x * this.blockSize,
+          y * this.blockSize,
+          this.blockSize,
+          this.blockSize
+        );
+      }
     });
+  });
 
-    const scaledSize = tetroSize * scale;
-    this.context.drawImage(
-      tempCanvas,
-      offset.x * this.blockSize,
-      offset.y * this.blockSize,
-      scaledSize,
-      scaledSize
-    );
-  }
+  const scaledSize = tetroSize * scale;
+  this.context.drawImage(
+    tempCanvas,
+    offset.x * this.blockSize,
+    offset.y * this.blockSize,
+    scaledSize,
+    scaledSize
+  );
 }
 
 class CanvasHold extends BaseCanvas {
@@ -140,8 +110,8 @@ class CanvasHold extends BaseCanvas {
 
 class CanvasNext {
   constructor() {
-    this.mainNext = new BaseCanvas("nextPiece", 20, 5, 5);
-    this.following = new BaseCanvas("followingPieces", 20, 14, 5);
+    this.mainNext = new BaseCanvas("nextCanvas", 20, 5, 5);
+    this.following = new BaseCanvas("followingCanvas", 20, 14, 5);
   }
 
   clearCanvas() {

@@ -50,7 +50,7 @@
         <div class="gameContainer">
             <div class="area hold-area">
                 <h3>Hold</h3>
-                <canvas class="box" id="hold_canvas"></canvas>
+                <canvas class="box" id="holdCanvas"></canvas>
                 <div class="stats">
                     <h3 class="stat">Score</h3>
                     <span id="score">0</span>
@@ -69,12 +69,12 @@
             </div>
             <div class="area" id="main-area">
                 <span id="gameMode">Endless Mode</span>
-                <canvas class="box" id="tetris" width="250" height="500"></canvas>
+                <canvas class="box" id="mainCanvas" width="250" height="500"></canvas>
             </div>
             <div class="area" id="next-area">
                 <h3>Next</h3>
-                <canvas class="box" id="nextPiece"></canvas>
-                <canvas class="box" id="followingPieces"></canvas>
+                <canvas class="box" id="nextCanvas"></canvas>
+                <canvas class="box" id="followingCanvas"></canvas>
                 <button id="homeButton" onclick="showStartScreen()">⌂</button>
             </div>
         </div>

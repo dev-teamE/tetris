@@ -1,12 +1,13 @@
 export class Player {
-    constructor() { 
-        this.pos = { x: 0, 
-                     y: 0
-                    };
+    constructor() {
+        this.pos = {
+            x: 0,
+            y: 0
+        };
         this.currentTetroType = null,
-        this.rotation = 0, 
+        this.rotation = 0,
         this.holdTetroType = null,
-        this.holdUsed = false, 
+        this.holdUsed = false,
         this.matrix = null,
         this.score = 0,
         this.totalLines = 0,
@@ -26,9 +27,9 @@ export class Player {
         this.playTime = 0,
         this.startTime = null
         this.ghost = {
-                        pos: {x: 0, y: 0},
-                        matrix: null
-                        },
-        this.nextPieces = [];
+            pos: { x: 0, y: 0 },
+            matrix: null
+        },
+            this.nextPieces = [];
     }
 }
