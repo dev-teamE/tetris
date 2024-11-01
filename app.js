@@ -2,8 +2,10 @@
 インポートと定数の定義
 ----------------------------------------*/
 
-import { load_sounds, pause_bgm, play_bgm, play_sounds } from "./audio.js";
+import { Sound, load_sounds, pause_bgm, play_bgm, play_sounds} from "./classes/Sound.js";
 import { Player } from "./classes/Player.js";
+import { Game } from "./classes/Game.js";
+
 // 定数の定義
 const baseSpeed = 1000; // 基準速度: 1秒 = 1000ミリ秒
 const tetrominoes = ['T', 'O', 'L', 'J', 'I', 'S', 'Z'];
@@ -33,7 +35,8 @@ let gameActive = true;
 let pauseStartTime = null;
 
 // インスタンス化
-
+const game = new Game();
+const sound = new Sound();
 /*
 プレーヤーとゲーム状態の定義
 ----------------------------------------*/
