@@ -3,7 +3,7 @@
 ----------------------------------------*/
 
 import { load_sounds, pause_bgm, play_bgm, play_sounds } from "./audio.js";
-
+import { Player } from "./classes/Player.js";
 // 定数の定義
 const baseSpeed = 1000; // 基準速度: 1秒 = 1000ミリ秒
 const tetrominoes = ['T', 'O', 'L', 'J', 'I', 'S', 'Z'];
@@ -31,7 +31,8 @@ let lastTime = 0;
 let animationId;
 let gameActive = true;
 let pauseStartTime = null;
-let nextPieces = [];
+
+// インスタンス化
 
 /*
 プレーヤーとゲーム状態の定義
@@ -42,38 +43,7 @@ const canvas = document.querySelector("#tetris");
 const context = canvas.getContext("2d");
 context.scale(25, 25);
 
-// プレイヤー情報
-const player = {
-  pos: { x: 0, y: 0 },
-  current_tetro_type: null,
-  rotation: 0, // 現在のミノの回転状況
-  hold_tetro_type: null,
-  hold_used: false, // １回の落下中にホールド機能を利用したかどうかの状態
-  matrix: null,
-  score: 0,
-  totalLines: 0,
-  level: 1,
-  combo: 0,
-  maxCombo: 0,
-  lastClearWasTetris: false,
-  backToBackActive: false,
-  isTouchingGround: false,
-  moveOrRotateCount: 1,
-  currentLastYPos: null,
-  maxLastYpos: null,
-  lockDelay: 500,
-  tSpin: false,
-  highScore: 0,
-  isHighScore: false,
-  playTime: 0,
-  startTime: null
-};
 
-// ゴーストの情報
-const ghost = {
-  pos: { x: 0, y: 0 },
-  matrix: null,
-}
 
 // アリーナ
 const arena = Array.from({ length: 20 }, () => Array(10).fill(0));
