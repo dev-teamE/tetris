@@ -33,7 +33,7 @@ let gameActive = true;
 let pauseStartTime = null;
 
 // インスタンス化
-
+const player = new Player();
 /*
 プレーヤーとゲーム状態の定義
 ----------------------------------------*/
