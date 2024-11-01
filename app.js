@@ -18,10 +18,13 @@ const colors = [
   [220, 0, 0],
 ];
 
+const  game = new Game();
+const audio = new Audio();
+
 /*
 グローバル変数の定義
 ----------------------------------------*/
-class game {
+class Game {
 
   dropInterval;
   currentTime;
@@ -34,7 +37,7 @@ class game {
   }
 }
 
-class audio {
+class Audio {
   constructor(bgm_sound, drop_sound, hold_sound, clear_sound, move_sound, rotate_sound) {
     this.bgm_sound = null;
     this.drop_sound = null;
