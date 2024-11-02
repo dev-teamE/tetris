@@ -3,96 +3,24 @@
 ----------------------------------------*/
 
 import { Sound, load_sounds, pause_bgm, play_bgm, play_sounds} from "./classes/Sound.js";
-import { Canvas } from "./classes/Player.js";
+import { MainCanvas, SubCanvas } from "./classes/Canvas.js";
 import { Game } from "./classes/Game.js";
 import { Player } from "./classes/Player.js";
-import { Tetoro } from "./classes/Player.js";
+import { Tetro } from "./classes/Tetro.js";
 
 // インスタンス化
 const game = new Game();
 const sound = new Sound();
 const player = new Player();
-const tetoro = new Tetoro();
-const mainCanvas = Canvas("mainCanvas", 20, 20, 10);
-const holdCanvas = Canvas("holdCanvas", 20, 5, 5);
-const nextCanvas = Canvas("nextCanvas", 20, 5, 5);
-const followingCanvas = Canvas("followingCanvas", 20, 14, 5);
-
-/*
-プレーヤーとゲーム状態の定義
-----------------------------------------*/
-
-/* 今後移動・削除する
-// Canvasの初期設定
-const canvas = document.querySelector("#tetris");
-const context = canvas.getContext("2d");
-context.scale(25, 25);
-const arena = Array.from({ length: 20 }, () => Array(10).fill(0));
-*/
+const tetro = new Tetro();
+const mainCanvas = MainCanvas("mainCanvas", 25, 20, 10);
+const holdCanvas = SubCanvas("holdCanvas", 20, 5, 5);
+const nextCanvas = SubCanvas("nextCanvas", 20, 5, 5);
+const followingCanvas = SubCanvas("followingCanvas", 20, 14, 5);
 
 /*
 Canvas関連のクラス定義
 ----------------------------------------*/
-
-// BaseCanvasから出した。NextとHoldのインスタンスに追加
-getTetroSize(matrix) {
-  const size = matrix.length * this.blockSize;
-  return size;
-}
-
-// BaseCanvasから出した。NextとHoldのインスタンスに追加
-drawTetro(tetroType, scale = 1) {
-  const matrix = createPiece(tetroType);
-  const pos = calculateDisplayPosition(tetroType, this.canvasWidth(), this.canvasHeight(), this.blockSize);
-
-  const tetroSize = this.getTetroSize(matrix);
-  const scaledSize = tetroSize * scale;
-
-  const offset = {
-    x: (this.canvasWidth() - scaledSize) / (2 * this.blockSize),
-    y: pos.y / this.blockSize
-  };
-
-  this.drawMatrix(matrix, offset, scale, tetroSize);
-}
-
-// BaseCanvasから出した。NextとHoldのインスタンスに追加
-drawMatrix(matrix, offset, scale = 1, tetroSize) {
-  const tempCanvas = document.createElement('canvas');
-  const tempCtx = tempCanvas.getContext('2d');
-
-  tempCanvas.width = tetroSize;
-  tempCanvas.height = tetroSize;
-
-  matrix.forEach((row, y) => {
-    row.forEach((value, x) => {
-      if (value !== 0) {
-        tempCtx.drawImage(
-          imgs[value],
-          x * this.blockSize,
-          y * this.blockSize,
-          this.blockSize,
-          this.blockSize
-        );
-      }
-    });
-  });
-
-  const scaledSize = tetroSize * scale;
-  this.context.drawImage(
-    tempCanvas,
-    offset.x * this.blockSize,
-    offset.y * this.blockSize,
-    scaledSize,
-    scaledSize
-  );
-}
-
-class CanvasHold extends BaseCanvas {
-  constructor() {
-    super("hold_canvas", 20, 5, 5);
-  }
-}
 
 class CanvasNext {
   constructor() {
@@ -682,15 +610,15 @@ function shuffle(array) {
 // セブンバッグを生成する関数
 function generateSevenBag() {
   // 7つのテトロミノをコピーしてシャッフルする関数
-  return shuffle([...tetrominoes]);
+  return shuffle([...tetro.types]);
 }
 
 // 次のテトロミノを取得する関数（ゲーム開始時とミノがロックされた時に呼び出す）
 function getNextTetromino() {
-  if (nextPieces.length <= 7) {
-    nextPieces = nextPieces.concat(generateSevenBag());
+  if (player.nextPieces.length <= 7) {
+    player.nextPieces = player.nextPieces.concat(generateSevenBag());
   }
-  return nextPieces.shift();
+  return player.nextPieces.shift();
 }
 
 /*
@@ -817,7 +745,8 @@ function saveHighScores(newScore) {
     score: newScore,
     date: new Date().toLocaleDateString(),
     level: player.level,
-    lines: player.totalLines
+    lines: player.totalLines,
+    playTime: player.playTime
   });
 
   // スコアで降順ソート
@@ -872,7 +801,7 @@ function checkLevelUp() {
 function calculateDropInterval(level) {
   // レベルが1の場合は基準速度を返す
   if (level < 1) {
-    return baseSpeed;
+    return game.baseSpeed;
   }
 
   const base = 0.8 - ((level - 1) * 0.007);
@@ -880,7 +809,7 @@ function calculateDropInterval(level) {
   const speedMultiplier = Math.pow(base, power);
 
   // 最小速度（7ミリ秒）を下回らないようにする
-  return Math.max(baseSpeed * speedMultiplier, 7);
+  return Math.max(game.baseSpeed * speedMultiplier, 7);
 }
 
 // レベル表示を更新する関数
@@ -893,7 +822,7 @@ function updateLevel() {
 ----------------------------------------*/
 
 function getPlayTimeInSeconds() {
-  if (!gameActive || !player.startTime) return 0;
+  if (!game.gameActive || !player.startTime) return 0;
   return Math.floor((Date.now() - player.startTime) / 1000);
 }
 
@@ -913,7 +842,7 @@ function displayBestTime() {
   const scores = getAllHighScores();
   if (scores.length === 0) return "No records";
 
-  const bestTime = Math.min(...scores.map(s => s.playTime));
+  const bestTime = Math.min(...scores.map(s => s.playTime || 0));
   return formatTime(bestTime);
 }
 
