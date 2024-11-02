@@ -2,7 +2,7 @@
 インポートと定数の定義
 ----------------------------------------*/
 
-import { Sound, load_sounds, pause_bgm, play_bgm, play_sounds} from "./classes/Sound.js";
+import { Sound, load_sounds, pause_bgm, play_bgm, play_sounds } from "./classes/Sound.js";
 import { MainCanvas, SubCanvas } from "./classes/Canvas.js";
 import { Game } from "./classes/Game.js";
 import { Player } from "./classes/Player.js";
@@ -22,51 +22,40 @@ const followingCanvas = SubCanvas("followingCanvas", 20, 14, 5);
 Canvas関連のクラス定義
 ----------------------------------------*/
 
-class CanvasNext {
-  constructor() {
-    this.mainNext = new BaseCanvas("nextCanvas", 20, 5, 5);
-    this.following = new BaseCanvas("followingCanvas", 20, 14, 5);
+function drawNextPieces(pieces) {
+  nextCanvas.clearCanvas();
+  followingCanvas.clearCanvas();
+
+  // メインの次のピースを描画
+  if (pieces.length > 0) {
+    nextCanvas.drawTetro(pieces[0], 1);
   }
 
-  clearCanvas() {
-    this.mainNext.clearCanvas();
-    this.following.clearCanvas();
-  }
+  // 後続のピースを描画（サイズを0.7倍に縮小）
+  for (let i = 1; i < Math.min(6, pieces.length); i++) {
+    const verticalSpacing = followingCanvas.blockSize * 2.65;
+    const yOffset = (i - 1) * verticalSpacing;
+    const matrix = createPiece(pieces[i]);
 
-  drawNextPieces(pieces) {
-    this.clearCanvas();
+    const tetroSize = followingCanvas.getTetroSize(matrix);
+    const scaledSize = tetroSize * 0.7;
 
-    // メインの次のピースを描画
-    if (pieces.length > 0) {
-      this.mainNext.drawTetro(pieces[0], 1);
+    // 中央配置のための調整
+    const xOffset = (followingCanvas.canvasWidth() - scaledSize) / (2 * this.following.blockSize);
+    let yAdjust = 0;
+    if (pieces[i] === 'I') {
+      yAdjust = -followingCanvas.blockSize * 0.25; // Iミノの場合、少し上に調整
     }
 
-    // 後続のピースを描画（サイズを0.7倍に縮小）
-    for (let i = 1; i < Math.min(6, pieces.length); i++) {
-      const verticalSpacing = this.following.blockSize * 2.65;
-      const yOffset = (i - 1) * verticalSpacing;
-      const matrix = createPiece(pieces[i]);
-
-      const tetroSize = this.following.getTetroSize(matrix);
-      const scaledSize = tetroSize * 0.7;
-
-      // 中央配置のための調整
-      const xOffset = (this.following.canvasWidth() - scaledSize) / (2 * this.following.blockSize);
-      let yAdjust = 0;
-      if (pieces[i] === 'I') {
-        yAdjust = -this.following.blockSize * 0.25; // Iミノの場合、少し上に調整
-      }
-
-      this.following.drawMatrix(
-        matrix,
-        {
-          x: xOffset,
-          y: (yOffset + this.following.blockSize) / this.following.blockSize + yAdjust / this.following.blockSize
-        },
-        0.7,
-        tetroSize
-      );
-    }
+    followingCanvas.drawMatrix(
+      matrix,
+      {
+        x: xOffset,
+        y: (yOffset + followingCanvas.blockSize) / followingCanvas.blockSize + yAdjust / followingCanvas.blockSize
+      },
+      0.7,
+      tetroSize
+    );
   }
 }
 
@@ -144,14 +133,10 @@ const drawGhostMatrix = (matrix, offset) => {
 }
 
 function draw_hold_field(tetro_type) {
-  canvasHold.clearCanvas();
+  holdCanvas.clearCanvas();
   if (tetro_type) {
-    canvasHold.drawTetro(tetro_type);
+    holdCanvas.drawTetro(tetro_type);
   }
-}
-
-function drawNextPieces() {
-  canvasNext.drawNextPieces(nextPieces);
 }
 
 function drawGameOver(finalPlayTime) {
@@ -524,7 +509,7 @@ function playerReset() {
   player.pos.x = (arena[0].length / 2 | 0) - (player.matrix[0].length / 2 | 0);
   player.currentLastYPos = lastYPos(player, player.matrix);
 
-  drawNextPieces();
+  drawNextPieces(nextPieces);
 
   // // ゲームオーバー
   // 配置直後に衝突判定
@@ -551,7 +536,7 @@ function player_reset_after_hold() {
     player.pos.x = (arena[0].length / 2 | 0) - (player.matrix[0].length / 2 | 0)
     ghostTetrimono()
     draw_hold_field(player.hold_tetro_type);
-    drawNextPieces();
+    drawNextPieces(nextPieces);
     // // ゲームオーバー
     // 配置直後に衝突判定
     if (collide(arena, player)) {
@@ -627,48 +612,47 @@ function getNextTetromino() {
 
 function checkPerfectClear() {
   // フィールド全体をチェック
-  for (let y = 0; y < arena.length; y++) {
-      for (let x = 0; x < arena[y].length; x++) {
-          if (arena[y][x] !== 0) {
-              return false;  // ブロックが残っている場合
-          }
+  for (let y = 0; y < mainCanvas.arena.length; y++) {
+    for (let x = 0; x < mainCanvas.arena[y].length; x++) {
+      if (mainCanvas.arena[y][x] !== 0) {
+        return false;  // ブロックが残っている場合
       }
+    }
   }
   return true;  // 全てのマスが空の場合
 }
 
 function updateBackToBack(linesCleared) {
   if (linesCleared === 4) {
-      if (!player.lastClearWasTetris) {
-          player.lastClearWasTetris = true;
-          player.backToBackActive = false;
-      } else {
-          player.backToBackActive = true;
-      }
-  } else {
-      player.lastClearWasTetris = false;
+    if (!player.lastClearWasTetris) {
+      player.lastClearWasTetris = true;
       player.backToBackActive = false;
+    } else {
+      player.backToBackActive = true;
+    }
+  } else {
+    player.lastClearWasTetris = false;
+    player.backToBackActive = false;
   }
 }
 
 // フィールド内の完成した行を削除し、スコアを更新する関数
 function arenaSweep() {
   let linesCleared = 0;
-    let perfectClear = true;
 
-    // 行を消すループ
-    outer: for (let y = arena.length - 1; y >= 0; --y) {
-        for (let x = 0; x < arena[y].length; ++x) {
-            if (arena[y][x] === 0) {
-                continue outer;
-            }
-        }
-        const row = arena.splice(y, 1)[0].fill(0);
-        arena.unshift(row);
-        ++y;
-        ++linesCleared;
-        // ここでのコンボ増加は削除
+  // 行を消すループ
+  outer: for (let y = mainCanvas.arena.length - 1; y >= 0; --y) {
+    for (let x = 0; x < mainCanvas.arena[y].length; ++x) {
+      if (mainCanvas.arena[y][x] === 0) {
+        continue outer;
+      }
     }
+    const row = mainCanvas.arena.splice(y, 1)[0].fill(0);
+    mainCanvas.arena.unshift(row);
+    ++y;
+    ++linesCleared;
+    // ここでのコンボ増加は削除
+  }
 
   if (linesCleared > 0) {
     const perfectClear = checkPerfectClear();
@@ -689,7 +673,7 @@ function arenaSweep() {
     };
 
     updateBackToBack(linesCleared);
-    
+
     // スコア計算
     let lineScore;
     if (perfectClear) {
@@ -1076,7 +1060,7 @@ const loading = async () => {
 
     // 初期表示
     gameStart();
-    drawNextPieces(); // Next表示の初期化
+    drawNextPieces(nextPieces); // Next表示の初期化
     draw_hold_field(null); // Hold表示の初期化
 
   } catch (err) {
