@@ -1,4 +1,4 @@
-export class Tetoro {
+export class Tetro {
     constructor() {
         this.types = ['T', 'O', 'L', 'J', 'I', 'S', 'Z'];
 

@@ -30,6 +30,6 @@ export class Player {
             pos: { x: 0, y: 0 },
             matrix: null
         },
-            this.nextPieces = [];
+        this.nextPieces = [];
     }
 }
