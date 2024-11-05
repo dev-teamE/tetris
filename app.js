@@ -712,3 +712,364 @@ function displayBestTime() {
   const bestTime = Math.min(...scores.map(s => s.playTime || 0));
   return formatTime(bestTime);
 }
+
+function draw(MainCanvas) {
+  MainCanvas.context.fillStyle = "#000";
+  MainCanvas.context.fillRect(0, 0, MainCanvas.canvasWidth(), MainCanvas.canvasHeight());
+
+  // 変更した盤面を映す
+  drawScreen(mainCanvas)
+  drawMatrix(mainCanvas, mainCanvas.arena, {x: 0, y: 0}, tetro,)
+  drawMatrix(mainCanvas, player.matrix, player.pos, tetro)
+  drawGhostMatrix(mainCanvas, player, tetro)
+};
+
+function drawScreen(MainCanvas) {
+  MainCanvas.context.drawImage(MainCanvas.screen, 0, 0, 10 * MainCanvas.blockSize, 20 * MainCanvas.blockSize);
+};
+
+function drawMatrix (MainCanvas, matrix, offset, Tetro) {
+
+  // matrixを描画
+  matrix.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value !== 0) {
+        // パターンを使用して塗りつぶし
+        MainCanvas.context.drawImage(Tetro.imgs[value], x + offset.x, y + offset.y, MainCanvas.blockSize, MainCanvas.blockSize);
+      }
+    });
+  });
+}
+
+function drawGhostMatrix(MainCanvas,Player, Tetro) {
+
+  Player.matrix.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value !== 0) {
+        // 線を描画
+        MainCanvas.context.strokeStyle = "rgba(" + Tetro.colors[value] + ")";;
+        MainCanvas.context.strokeRect(x + Player.ghost.pos.x, y + Player.ghost.pos.y, MainCanvas.blockSize, MainCanvas.blockSize);
+      }
+    });
+  });
+}
+
+function drawGameOver(MainCanvas,Player) {
+  MainCanvas.context.save();  // 現在の描画状態を保存
+  MainCanvas.context.setTransform(1, 0, 0, 1, 0, 0);
+  MainCanvas.context.fillStyle = 'rgba(0, 0, 0, 0.75)';
+  MainCanvas.context.fillRect(0, 0, MainCanvas.canvasWidth(), MainCanvas.canvasHeight());
+
+
+  if (Player.isHighScore) {
+    MainCanvas.context.fillStyle = '#00FF00';
+    MainCanvas.context.font = 'bold 30px Arial';
+    MainCanvas.context.textAlign = 'center';
+    MainCanvas.context.textBaseline = 'center';
+    MainCanvas.context.fillText(`New Record!!`, MainCanvas.canvasWidth() / 2, MainCanvas.canvasHeight() / 2);
+  } else {
+    MainCanvas.context.fillStyle = '#FF0000';
+    MainCanvas.context.font = 'bold 30px Arial';
+    MainCanvas.context.textAlign = 'center';
+    MainCanvas.context.textBaseline = 'center';
+    MainCanvas.context.fillText('GAME OVER', MainCanvas.canvasWidth() / 2, MainCanvas.canvasHeight() / 2);
+  }
+
+  MainCanvas.context.restore();  // 描画状態を元に戻す
+}
+
+/*
+テトロミノ操作関連の関数
+----------------------------------------*/
+
+// ピースの構造を定義(数字は色のインデックス)
+function createPiece(type) {
+  if (type === 'T') {
+    return [
+      [0, 1, 0],
+      [1, 1, 1],
+      [0, 0, 0],
+    ];
+  } else if (type === "O") {
+    return [
+      [2, 2],
+      [2, 2],
+    ];
+  } else if (type === "L") {
+    return [
+      [0, 0, 3],
+      [3, 3, 3],
+      [0, 0, 0],
+    ];
+  } else if (type === "J") {
+    return [
+      [4, 0, 0],
+      [4, 4, 4],
+      [0, 0, 0],
+    ];
+  } else if (type === "I") {
+    return [
+      [0, 0, 0, 0],
+      [5, 5, 5, 5],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+    ];
+  } else if (type === 'S') {
+    return [
+      [0, 6, 6],
+      [6, 6, 0],
+      [0, 0, 0],
+    ];
+  } else if (type === 'Z') {
+    return [
+      [7, 7, 0],
+      [0, 7, 7],
+      [0, 0, 0],
+    ];
+  }
+}
+
+// スコアを更新する関数
+function updateScore(Player) {
+  document.querySelector('#score').innerText = Player.score;
+  document.querySelector('#lines').innerText = Player.totalLines;
+  document.querySelector('#highScore').innerText = Player.highScore;
+
+  // スコアがハイスコアを超えた場合
+  if (Player.score > Player.highScore) {
+    saveHighScores(Player);  // 保存
+    Player.highScore = getTopScore();  // 1位のスコアを取得
+    Player.isHighScore = true;
+  }
+}
+
+// レベル表示を更新する関数
+function updateLevel(Player) {
+  document.querySelector('#level').innerText = Player.level;
+}
+/*
+ゲーム状態管理の関数
+----------------------------------------*/
+
+function gameStart(MainCanvas, Sound) {
+  restartGame()
+  MainCanvas.context.restore()
+  play_sounds(Sound.bgm_sound)
+}
+
+function gameOver(Canvas, Player, Game) {
+  const finalPlayTime = getPlayTimeInSeconds(Player);
+
+  Game.gameActive = false; // ゲームの状態を非アクティブに設定
+  cancelAnimationFrame(Game.animationId); // ゲームループを停止
+  document.getElementById('pauseButton').style.display = 'none'; // 一時停止、再開ボタンを非表示にする
+  document.getElementById('restartButton').style.display = 'block'; // リスタートボタンを表示
+  drawGameOver(Canvas, Player);
+
+  if (Player.score > Player.highScore) {
+    saveHighScores(Player);
+  }
+}
+
+
+
+function restartGame(MainCanvas, Player, Game) {
+  // ゲームの状態をアクティブに設定
+  Game.gameActive = true;
+  // フィールドを全てゼロでリセット
+  MainCanvas.arena.forEach(row => row.fill(0));
+  // プレイヤーのスコアをリセット
+  Player.score = 0;
+  // ライン数をリセット
+  Player.totalLines = 0;
+  // レベルをリセット
+  Player.level = 1;
+  Player.combo = 0;
+  Player.maxCombo = 0;
+  Player.lastClearWasTetris = false;
+  Player.backToBackActive = false;
+  Player.startTime = Date.now();  // ゲーム開始時刻を記録
+  Player.highScore = getTopScore();
+  Player.isHighScore = false;
+
+  // 落下速度をリセット
+  Game.dropInterval = calculateDropInterval(Player);
+  // ホールドしているテトロミノをリセット
+  Player.hold_tetro_type = null;
+  draw_hold_field(null);
+  // スコアとレベル表示を更新
+  updateScore();
+  updateLevel();
+  // ピースをシャッフルし直す
+  Player.nextPieces = generateSevenBag();
+  // プレイヤーのピースをリセット
+  playerReset();
+  // アニメーションのタイマーをリセット
+  Game.currentTime = 0;
+  Game.lastTime = 0;  // lastTimeもリセット
+  Player.startTime = Date.now();
+  document.querySelector('#playTime').innerText = '0:00:00';
+  document.getElementById("pauseButton").innerText = "⏸"; //  ボタンのテキストをPauseに戻す
+
+  // ゲームを再開
+  update();
+
+  // リスタートボタンを非表示にする
+  document.getElementById("pauseButton").innerText = "⏸"; //  ボタンのテキストをPauseに戻す
+  document.getElementById('restartButton').style.display = 'none';
+  // document.getElementById('startButton').style.display = 'none';
+  // 一時停止・再開ボタンを表示する
+  document.getElementById('pauseButton').style.display = 'block';
+  play_bgm(bgm_sound);
+}
+
+function pauseGame(Player, Game, Sound) {
+  if (Game.gameActive) {
+    // 一時停止処理
+    Game.gameActive = false;
+    cancelAnimationFrame(Game.animationId); // アニメーションフレームの停止
+    document.getElementById("pauseButton").innerText = "▷"; // ボタンのテキストを「Resume」に変更
+    pause_bgm(Sound.bgm_sound);
+    Game.pauseStartTime = Date.now();
+  } else {
+    // ゲームを再開
+    Game.gameActive = true;
+    const pauseDuration = Date.now() - Game.pauseStartTime;
+    Player.startTime += pauseDuration;  // 開始時刻を一時停止時間分ずらす
+    update(); // ゲーム更新を再開
+    document.getElementById("pauseButton").innerText = "⏸"; //  ボタンのテキストをPauseに戻す
+    play_bgm(Sound.bgm_sound);
+  }
+}
+
+function update(Player, Game) {
+  if (Game.gameActive) { // ゲームが非アクティブな場合は更新を行わない
+
+    Game.currentTime = performance.now()
+
+    if (!(Player.pos.x == Player.ghost.pos.x && Player.pos.y == Player.ghost.pos.y)) { //ミノが床に接していない時(通常のドロップ)
+      if (Game.currentTime - Game.lastTime >= Game.dropInterval) {
+        playerDrop();
+
+        if (collide(mainCanvas.arena, player)) {
+          return;
+        }
+
+        Game.lastTime = Game.currentTime;
+      }
+
+      updatePlayTime();
+      draw()
+    } else {
+      if (Game.currentTime - Game.lastTime > Math.floor(Game.dropInterval / 2)) { // ミノが床に接している時は通常速度の半分
+        playerDrop();
+
+        if (collide(mainCanvas.arena, player)) {
+          return;
+        }
+
+        Game.lastTime = Game.currentTime;
+      }
+
+      updatePlayTime();
+      draw()
+    }
+  }
+  Game.animationId = requestAnimationFrame(update)
+}
+
+function showPlayScreen() {
+  document.getElementById("startScreen").style.display = "none"; // スタート画面非表示
+  document.getElementById("playScreen").style.display = "flex"; // プレイ画面をflexで表示
+}
+
+function showStartScreen() {
+  document.getElementById("startScreen").style.display = "flex"; // プレイ画面をflexで表示
+  document.getElementById("playScreen").style.display = "none"; // スタート画面非表示
+}
+
+/*
+衝突判定と位置計算
+----------------------------------------*/
+
+function collide(Canvas, Player) {
+  const [m, o] = [Player.matrix, Player.pos];
+  for (let y = 0; y < m.length; y++) {
+    for (let x = 0; x < m[y].length; x++) {
+      if (m[y][x] !== 0 && (Canvas.arena[y + o.y] && Canvas.arena[y + o.y][x + o.x]) !== 0) { // 要確認
+        return true
+      }
+    }
+  }
+  return false
+}
+
+function ghostTetrimono(Canvas, Player) { //ゴーストの表示位置を設定する
+  Player.ghost.matrix = Player.matrix;
+  Player.ghost.pos.x = Player.pos.x;
+  Player.ghost.pos.y = Player.pos.y;
+  while (!collide(Canvas, Player)) Player.ghost.pos.y++;
+  while (collide(Canvas, Player)) Player.ghost.pos.y--;
+}
+
+/*
+初期化とイベントリスナー
+----------------------------------------*/
+
+//画像読込
+async function load_image(path) {
+  const t_img = new Image();
+  return new Promise(
+    (resolve) => {
+      t_img.onload = () => {
+        resolve(t_img);
+      }
+      t_img.src = path;
+    }
+  )
+};
+
+async function loading(MainCanvas, Player, Tetro, Sound) {
+  try {
+    MainCanvas.screen = await load_image("./assets/Board/Board.png");
+    Tetro.imgJ = await load_image("./assets/Single Blocks/Blue.png");
+    Tetro.imgS = await load_image("./assets/Single Blocks/Green.png");
+    Tetro.imgI = await load_image("./assets/Single Blocks/LightBlue.png");
+    Tetro.imgL = await load_image("./assets/Single Blocks/Orange.png");
+    Tetro.imgT = await load_image("./assets/Single Blocks/Purple.png");
+    Tetro.imgZ = await load_image("./assets/Single Blocks/Red.png");
+    Tetro.imgO = await load_image("./assets/Single Blocks/Yellow.png");
+    Tetro.imgs = [
+      null,
+      Tetro.imgT,
+      Tetro.imgO,
+      Tetro.imgL,
+      Tetro.imgJ,
+      Tetro.imgI,
+      Tetro.imgS,
+      Tetro.imgZ
+    ]
+    Sound.bgm_sound = await load_sounds("bgm");
+    Sound.drop_sound = await load_sounds("drop");
+    Sound.hold_sound = await load_sounds("hold");
+    Sound.clear_sound = await load_sounds("clear");
+    Sound.move_sound = await load_sounds("move");
+    Sound.rotate_sound = await load_sounds("rotate");
+
+    // Canvas初期化
+    canvasHold = SubCanvas();
+    canvasNext = SubCanvas();
+
+    // ハイスコアの初期読み込みと表示
+    Player.highScore = getTopScore();
+    document.querySelector('#highScore').innerText = Player.highScore;
+
+    // 初期表示
+    gameStart();
+    drawNextPieces(); // Next表示の初期化
+    draw_hold_field(null); // Hold表示の初期化
+
+  } catch (err) {
+    console.log(err);
+  }
+}
