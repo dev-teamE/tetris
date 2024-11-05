@@ -304,19 +304,19 @@ const createPiece = (type) => {
 // 現在のテトロミノの配列を90度時計回りに回転させた配列を返す関数
 // 以下引数について
 // current_tetro: 現在のテトロミノの２次元配列
-function rotate(current_tetro) {
-  let new_tetro = []; // 回転後の情報を格納する配列new_tetroを作成
-  let current_tetro_size = current_tetro.length; // 現在のテトリミノの配列のサイズを取得する
-  for (let y = 0; y < current_tetro_size; y++) {
+function rotate(tetro) {
+  let newTetro = []; // 回転後の情報を格納する配列new_tetroを作成
+  let currentTetroSize = tetro.length; // 現在のテトリミノの配列のサイズを取得する
+  for (let y = 0; y < currentTetroSize; y++) {
     // ２次元配列にしたいので行ごとに配列を作成
-    new_tetro[y] = [];
-    for (let x = 0; x < current_tetro_size; x++) {
+    newTetro[y] = [];
+    for (let x = 0; x < currentTetroSize; x++) {
       // 時計回りに90度回転させる場合の転記
-      new_tetro[y][x] = current_tetro[current_tetro_size - x - 1][y];
+      newTetro[y][x] = tetro[currentTetroSize - x - 1][y];
     }
   }
   play_sounds(rotate_sound)
-  return new_tetro;
+  return newTetro;
 }
 
 function updateRotationAxis() { // プレイヤーに保存している現在の表示しているテトロミノ回転軸を更新する
