@@ -1,3 +1,5 @@
+import { calculateDisplayPosition, createPiece } from "./app.js";
+
 class Canvas {
     constructor(canvasId, blockSize, row, col) {
         this.canvas = document.getElementById(canvasId);
