@@ -85,7 +85,7 @@ function playerHold(player, mainCanvas) {
             player.pos.y = 0;
             player.pos.x = (mainCanvas.arena[0].length / 2 | 0) - (player.matrix[0].length / 2 | 0)
             ghostTetrimono()
-            draw_hold_field(player.holdTetroType);
+            draw_hold_field(player.holdTetroType, holdCanvas);
             drawNextPieces();
             // // ゲームオーバー
             // 配置直後に衝突判定
@@ -98,7 +98,7 @@ function playerHold(player, mainCanvas) {
             player.holdUsed = true;
             player.holdTetroType = player.currentTetroType;
             playerReset(player, mainCanvas);
-            draw_hold_field(player.holdTetroType);
+            draw_hold_field(player.holdTetroType, holdCanvas);
           }
           play_sounds(hold_sound)
       }
@@ -318,7 +318,7 @@ function playerHold(player, mainCanvas) {
             player.pos.y = 0;
             player.pos.x = (mainCanvas.arena[0].length / 2 | 0) - (player.matrix[0].length / 2 | 0)
             ghostTetrimono()
-            draw_hold_field(player.holdTetroType);
+            draw_hold_field(player.holdTetroType, holdCanvas);
             drawNextPieces();
             // // ゲームオーバー
             // 配置直後に衝突判定
@@ -331,7 +331,7 @@ function playerHold(player, mainCanvas) {
             player.holdUsed = true;
             player.holdTetroType = player.currentTetroType;
             playerReset(player, mainCanvas);
-            draw_hold_field(player.holdTetroType);
+            draw_hold_field(player.holdTetroType, holdCanvas);
           }
           play_sounds(hold_sound)
       }
@@ -439,14 +439,14 @@ function calculateDisplayPosition(tetroType, canvasWidth, canvasHeight, blockSiz
   return { x: startX, y: startY };
 }
 
-function draw_hold_field(tetro_type) {
+function draw_hold_field(tetro_type, holdCanvas) {
   holdCanvas.clearCanvas();
   if (tetro_type) {
     holdCanvas.drawTetro(tetro_type);
   }
 }
 
-function drawNextPieces(pieces) {
+function drawNextPieces(pieces, nextCanvas, followingCanvas) {
   nextCanvas.clearCanvas();
   followingCanvas.clearCanvas();
 
@@ -465,7 +465,7 @@ function drawNextPieces(pieces) {
     const scaledSize = tetroSize * 0.7;
 
     // 中央配置のための調整
-    const xOffset = (followingCanvas.canvasWidth() - scaledSize) / (2 * this.following.blockSize);
+    const xOffset = (followingCanvas.canvasWidth() - scaledSize) / (2 * followingCanvas.blockSize);
     let yAdjust = 0;
     if (pieces[i] === 'I') {
       yAdjust = -followingCanvas.blockSize * 0.25; // Iミノの場合、少し上に調整
@@ -502,7 +502,7 @@ function generateSevenBag() {
 }
 
 // 次のテトロミノを取得する関数（ゲーム開始時とミノがロックされた時に呼び出す）
-function getNextTetromino() {
+function getNextTetromino(player) {
   if (player.nextPieces.length <= 7) {
     player.nextPieces = player.nextPieces.concat(generateSevenBag());
   }
@@ -513,7 +513,7 @@ function getNextTetromino() {
 スコアとレベル管理
 ----------------------------------------*/
 
-function checkPerfectClear() {
+function checkPerfectClear(mainCanvas, player) {
   // フィールド全体をチェック
   for (let y = 0; y < mainCanvas.arena.length; y++) {
     for (let x = 0; x < mainCanvas.arena[y].length; x++) {
@@ -525,7 +525,7 @@ function checkPerfectClear() {
   return true;  // 全てのマスが空の場合
 }
 
-function updateBackToBack(linesCleared) {
+function updateBackToBack(linesCleared, player) {
   if (linesCleared === 4) {
     if (!player.lastClearWasTetris) {
       player.lastClearWasTetris = true;
@@ -540,7 +540,7 @@ function updateBackToBack(linesCleared) {
 }
 
 // フィールド内の完成した行を削除し、スコアを更新する関数
-function arenaSweep() {
+function arenaSweep(mainCanvas, player) {
   let linesCleared = 0;
 
   // 行を消すループ
@@ -617,7 +617,7 @@ function arenaSweep() {
 }
 
 // スコアを保存する関数
-function saveHighScores(newScore) {
+function saveHighScores(newScore, player) {
   let highScores = localStorage.getItem('tetrisHighScores');
 
   // localStorageは配列が保存できないので、JSON.stringifyで文字列に変換して保存。parseで配列に戻す
@@ -659,18 +659,18 @@ function getAllHighScores() {
 }
 
 // レベルアップの条件をチェックし、必要に応じてレベルアップする関数
-function checkLevelUp() {
+function checkLevelUp(player) {
   const newLevel = Math.floor(player.totalLines / 10) + 1;
   if (newLevel > player.level) {
     player.level = newLevel;
     // 新しいレベルに基づいて落下間隔を更新
-    dropInterval = calculateDropInterval(player.level);
+    dropInterval = calculateDropInterval(player.level, player);
     // レベルアップ表示を更新
     updateLevel();
   }
 }
 
-function calculateDropInterval(level) {
+function calculateDropInterval(level, game) {
   // レベルが1の場合は基準速度を返す
   if (level < 1) {
     return game.baseSpeed;
@@ -688,7 +688,7 @@ function calculateDropInterval(level) {
 時間関連の関数
 ----------------------------------------*/
 
-function getPlayTimeInSeconds() {
+function getPlayTimeInSeconds(player, game) {
   if (!game.gameActive || !player.startTime) return 0;
   return Math.floor((Date.now() - player.startTime) / 1000);
 }
@@ -896,7 +896,7 @@ function restartGame(MainCanvas, Player, Game) {
   Game.dropInterval = calculateDropInterval(Player);
   // ホールドしているテトロミノをリセット
   Player.hold_tetro_type = null;
-  draw_hold_field(null);
+  draw_hold_field(null, holdCanvas);
   // スコアとレベル表示を更新
   updateScore();
   updateLevel();
@@ -1067,7 +1067,7 @@ async function loading(MainCanvas, Player, Tetro, Sound) {
     // 初期表示
     gameStart();
     drawNextPieces(); // Next表示の初期化
-    draw_hold_field(null); // Hold表示の初期化
+    draw_hold_field(null, holdCanvas); // Hold表示の初期化
 
   } catch (err) {
     console.log(err);
