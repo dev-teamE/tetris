@@ -9,6 +9,7 @@ export class Game {
     this.gameActive = true;
     this.pauseStartTime = null;
     this.baseSpeed = 1000;
+    
   }
 }
 
