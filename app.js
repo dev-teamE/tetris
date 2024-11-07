@@ -582,7 +582,7 @@ function playerRotate(player, mainCanvas, sound, game) {
 }
 
 // 表示用の開始位置を計算する関数（NEXTとHOLD用）
-export function calculateDisplayPosition(tetroType, canvasWidth, canvasHeight, blockSize) {
+function calculateDisplayPosition(tetroType, canvasWidth, canvasHeight, blockSize) {
   let startX, startY;
 
   switch (tetroType) {
@@ -947,7 +947,7 @@ function drawGameOver(MainCanvas,Player) {
 ----------------------------------------*/
 
 // ピースの構造を定義(数字は色のインデックス)
-export function createPiece(type) {
+function createPiece(type) {
   if (type === 'T') {
     return [
       [0, 1, 0],
