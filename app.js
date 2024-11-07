@@ -13,10 +13,10 @@ const game = new Game();
 const sound = new Sound();
 const player = new Player();
 const tetro = new Tetro();
-const mainCanvas = MainCanvas("mainCanvas", 25, 20, 10);
-const holdCanvas = SubCanvas("holdCanvas", 20, 5, 5);
-const nextCanvas = SubCanvas("nextCanvas", 20, 5, 5);
-const followingCanvas = SubCanvas("followingCanvas", 20, 14, 5);
+const mainCanvas = new MainCanvas("mainCanvas", 25, 20, 10);
+const holdCanvas = new SubCanvas("holdCanvas", 20, 5, 5);
+const nextCanvas = new SubCanvas("nextCanvas", 20, 5, 5);
+const followingCanvas = new SubCanvas("followingCanvas", 20, 14, 5);
 
 /**
  * キーイベントのバインディングを初期化する関数。
