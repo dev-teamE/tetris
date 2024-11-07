@@ -719,7 +719,7 @@ function draw(MainCanvas) {
 
   // 変更した盤面を映す
   drawScreen(mainCanvas)
-  drawMatrix(mainCanvas, mainCanvas.arena, {x: 0, y: 0}, tetro,)
+  drawMatrix(mainCanvas, mainCanvas.arena, {x: 0, y: 0}, tetro)
   drawMatrix(mainCanvas, player.matrix, player.pos, tetro)
   drawGhostMatrix(mainCanvas, player, tetro)
 };
@@ -837,7 +837,7 @@ function updateScore(Player) {
 
   // スコアがハイスコアを超えた場合
   if (Player.score > Player.highScore) {
-    saveHighScores(Player);  // 保存
+    saveHighScores(Player.score);  // 保存
     Player.highScore = getTopScore();  // 1位のスコアを取得
     Player.isHighScore = true;
   }
@@ -852,28 +852,29 @@ function updateLevel(Player) {
 ----------------------------------------*/
 
 function gameStart(MainCanvas, Sound) {
-  restartGame()
+  restartGame(mainCanvas, player, game)
   MainCanvas.context.restore()
   play_sounds(Sound.bgm_sound)
 }
 
 function gameOver(Canvas, Player, Game) {
-  const finalPlayTime = getPlayTimeInSeconds(Player);
+  // 追加要素？
+  const finalPlayTime = getPlayTimeInSeconds(player, game);
 
   Game.gameActive = false; // ゲームの状態を非アクティブに設定
   cancelAnimationFrame(Game.animationId); // ゲームループを停止
   document.getElementById('pauseButton').style.display = 'none'; // 一時停止、再開ボタンを非表示にする
   document.getElementById('restartButton').style.display = 'block'; // リスタートボタンを表示
-  drawGameOver(Canvas, Player);
+  drawGameOver(mainCanvas, player);
 
   if (Player.score > Player.highScore) {
-    saveHighScores(Player);
+    saveHighScores(Player.score);
   }
 }
 
 
 
-function restartGame(MainCanvas, Player, Game) {
+function restartGame(MainCanvas, Player, Game, Tetro) {
   // ゲームの状態をアクティブに設定
   Game.gameActive = true;
   // フィールドを全てゼロでリセット
@@ -893,17 +894,17 @@ function restartGame(MainCanvas, Player, Game) {
   Player.isHighScore = false;
 
   // 落下速度をリセット
-  Game.dropInterval = calculateDropInterval(Player);
+  Game.dropInterval = calculateDropInterval(Player.level);
   // ホールドしているテトロミノをリセット
   Player.hold_tetro_type = null;
   draw_hold_field(null);
   // スコアとレベル表示を更新
-  updateScore();
-  updateLevel();
+  updateScore(player);
+  updateLevel(player);
   // ピースをシャッフルし直す
-  Player.nextPieces = generateSevenBag();
+  Player.nextPieces = generateSevenBag(Tetro);
   // プレイヤーのピースをリセット
-  playerReset();
+  playerReset(player, mainCanvas);
   // アニメーションのタイマーをリセット
   Game.currentTime = 0;
   Game.lastTime = 0;  // lastTimeもリセット
@@ -912,7 +913,7 @@ function restartGame(MainCanvas, Player, Game) {
   document.getElementById("pauseButton").innerText = "⏸"; //  ボタンのテキストをPauseに戻す
 
   // ゲームを再開
-  update();
+  update(player, game);
 
   // リスタートボタンを非表示にする
   document.getElementById("pauseButton").innerText = "⏸"; //  ボタンのテキストをPauseに戻す
@@ -920,25 +921,25 @@ function restartGame(MainCanvas, Player, Game) {
   // document.getElementById('startButton').style.display = 'none';
   // 一時停止・再開ボタンを表示する
   document.getElementById('pauseButton').style.display = 'block';
-  play_bgm(bgm_sound);
+  play_bgm(sound.bgm_sound);
 }
 
-function pauseGame(Player, Game, Sound) {
+function pauseGame(Player, Game) {
   if (Game.gameActive) {
     // 一時停止処理
     Game.gameActive = false;
     cancelAnimationFrame(Game.animationId); // アニメーションフレームの停止
     document.getElementById("pauseButton").innerText = "▷"; // ボタンのテキストを「Resume」に変更
-    pause_bgm(Sound.bgm_sound);
+    pause_bgm(sound.bgm_sound);
     Game.pauseStartTime = Date.now();
   } else {
     // ゲームを再開
     Game.gameActive = true;
     const pauseDuration = Date.now() - Game.pauseStartTime;
     Player.startTime += pauseDuration;  // 開始時刻を一時停止時間分ずらす
-    update(); // ゲーム更新を再開
+    update(player, game); // ゲーム更新を再開
     document.getElementById("pauseButton").innerText = "⏸"; //  ボタンのテキストをPauseに戻す
-    play_bgm(Sound.bgm_sound);
+    play_bgm(sound.bgm_sound);
   }
 }
 
@@ -972,7 +973,7 @@ function update(Player, Game) {
       }
 
       updatePlayTime();
-      draw()
+      draw(mainCanvas)
     }
   }
   Game.animationId = requestAnimationFrame(update)
@@ -992,11 +993,11 @@ function showStartScreen() {
 衝突判定と位置計算
 ----------------------------------------*/
 
-function collide(Canvas, Player) {
+function collide(MainCanvas, Player) {
   const [m, o] = [Player.matrix, Player.pos];
   for (let y = 0; y < m.length; y++) {
     for (let x = 0; x < m[y].length; x++) {
-      if (m[y][x] !== 0 && (Canvas.arena[y + o.y] && Canvas.arena[y + o.y][x + o.x]) !== 0) { // 要確認
+      if (m[y][x] !== 0 && (MainCanvas.arena[y + o.y] && MainCanvas.arena[y + o.y][x + o.x]) !== 0) { // 要確認
         return true
       }
     }
@@ -1008,8 +1009,8 @@ function ghostTetrimono(Canvas, Player) { //ゴーストの表示位置を設定
   Player.ghost.matrix = Player.matrix;
   Player.ghost.pos.x = Player.pos.x;
   Player.ghost.pos.y = Player.pos.y;
-  while (!collide(Canvas, Player)) Player.ghost.pos.y++;
-  while (collide(Canvas, Player)) Player.ghost.pos.y--;
+  while (!collide(mainCanvas, player)) Player.ghost.pos.y++;
+  while (collide(mainCanvas, player)) Player.ghost.pos.y--;
 }
 
 /*
@@ -1057,15 +1058,15 @@ async function loading(MainCanvas, Player, Tetro, Sound) {
     Sound.rotate_sound = await load_sounds("rotate");
 
     // Canvas初期化
-    canvasHold = SubCanvas();
-    canvasNext = SubCanvas();
+    holdCanvas = SubCanvas("holdCanvas", 20, 5, 5);
+    nextCanvas = SubCanvas("nextCanvas", 20, 5, 5);
 
     // ハイスコアの初期読み込みと表示
     Player.highScore = getTopScore();
     document.querySelector('#highScore').innerText = Player.highScore;
 
     // 初期表示
-    gameStart();
+    gameStart(mainCanvas, sound);
     drawNextPieces(); // Next表示の初期化
     draw_hold_field(null); // Hold表示の初期化
 
