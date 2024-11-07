@@ -1,6 +1,8 @@
-import { player, calculateDisplayPosition, createPiece } from "../app.js";
+import { calculateDisplayPosition, createPiece } from "../app.js";
+import { Player } from "./classes/Player.js";
 import { Tetro } from "./classes/Tetro.js";
 
+const player = new Player();
 const tetro = new Tetro();
 
 class Canvas {
