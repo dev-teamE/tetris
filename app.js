@@ -1015,8 +1015,8 @@ function updateLevel(Player) {
 ゲーム状態管理の関数
 ----------------------------------------*/
 
-function gameStart(MainCanvas, Sound) {
-  restartGame(mainCanvas, player, game)
+function gameStart(MainCanvas, Player, Game, Sound) {
+  restartGame(MainCanvas, Player, Game, Sound)
   MainCanvas.context.restore()
   play_sounds(Sound.bgm_sound)
 }
@@ -1038,7 +1038,7 @@ function gameOver(Canvas, Player, Game) {
 
 
 
-function restartGame(MainCanvas, Player, Game, Tetro) {
+function restartGame(MainCanvas, Player, Game, Sound, Tetro) {
   // ゲームの状態をアクティブに設定
   Game.gameActive = true;
   // フィールドを全てゼロでリセット
@@ -1066,9 +1066,9 @@ function restartGame(MainCanvas, Player, Game, Tetro) {
   updateScore(player);
   updateLevel(player);
   // ピースをシャッフルし直す
-  Player.nextPieces = generateSevenBag(Tetro);
+  Player.nextPieces = generateSevenBag();
   // プレイヤーのピースをリセット
-  playerReset(player, mainCanvas);
+  playerReset(Player, MainCanvas, Game);
   // アニメーションのタイマーをリセット
   Game.currentTime = 0;
   Game.lastTime = 0;  // lastTimeもリセット
@@ -1077,7 +1077,7 @@ function restartGame(MainCanvas, Player, Game, Tetro) {
   document.getElementById("pauseButton").innerText = "⏸"; //  ボタンのテキストをPauseに戻す
 
   // ゲームを再開
-  update(player, game);
+  update(MainCanvas, Player, Game, Sound);
 
   // リスタートボタンを非表示にする
   document.getElementById("pauseButton").innerText = "⏸"; //  ボタンのテキストをPauseに戻す
@@ -1101,22 +1101,22 @@ function pauseGame(Player, Game) {
     Game.gameActive = true;
     const pauseDuration = Date.now() - Game.pauseStartTime;
     Player.startTime += pauseDuration;  // 開始時刻を一時停止時間分ずらす
-    update(player, game); // ゲーム更新を再開
+    update(MainCanvas, Player, Game, Sound); // ゲーム更新を再開
     document.getElementById("pauseButton").innerText = "⏸"; //  ボタンのテキストをPauseに戻す
     play_bgm(sound.bgm_sound);
   }
 }
 
-function update(Player, Game) {
+function update(MainCanvas, Player, Game, Sound) {
   if (Game.gameActive) { // ゲームが非アクティブな場合は更新を行わない
 
     Game.currentTime = performance.now()
 
     if (!(Player.pos.x == Player.ghost.pos.x && Player.pos.y == Player.ghost.pos.y)) { //ミノが床に接していない時(通常のドロップ)
       if (Game.currentTime - Game.lastTime >= Game.dropInterval) {
-        playerDrop();
+        playerDrop(Player, MainCanvas, Game, Sound));
 
-        if (collide(mainCanvas.arena, player)) {
+        if (collide(mainCanvas, player)) {
           return;
         }
 
@@ -1124,19 +1124,19 @@ function update(Player, Game) {
       }
 
       updatePlayTime();
-      draw()
+      draw(mainCanvas)
     } else {
       if (Game.currentTime - Game.lastTime > Math.floor(Game.dropInterval / 2)) { // ミノが床に接している時は通常速度の半分
         playerDrop();
 
-        if (collide(mainCanvas.arena, player)) {
+        if (collide(mainCanvas, player)) {
           return;
         }
 
         Game.lastTime = Game.currentTime;
       }
 
-      updatePlayTime();
+      updatePlayTime(Player, MainCanvas, Game, Sound);
       draw(mainCanvas)
     }
   }
@@ -1173,8 +1173,8 @@ function ghostTetrimono(Canvas, Player) { //ゴーストの表示位置を設定
   Player.ghost.matrix = Player.matrix;
   Player.ghost.pos.x = Player.pos.x;
   Player.ghost.pos.y = Player.pos.y;
-  while (!collide(mainCanvas, player)) Player.ghost.pos.y++;
-  while (collide(mainCanvas, player)) Player.ghost.pos.y--;
+  while (!collide(Canvas, player)) Player.ghost.pos.y++;
+  while (collide(Canvas, player)) Player.ghost.pos.y--;
 }
 
 /*
@@ -1221,16 +1221,12 @@ async function loading(MainCanvas, Player, Tetro, Sound) {
     Sound.move_sound = await load_sounds("move");
     Sound.rotate_sound = await load_sounds("rotate");
 
-    // Canvas初期化
-    holdCanvas = SubCanvas("holdCanvas", 20, 5, 5);
-    nextCanvas = SubCanvas("nextCanvas", 20, 5, 5);
-
     // ハイスコアの初期読み込みと表示
     Player.highScore = getTopScore();
     document.querySelector('#highScore').innerText = Player.highScore;
 
     // 初期表示
-    gameStart(mainCanvas, sound);
+    gameStart(MainCanvas, Player, Game, Sound);
     drawNextPieces(); // Next表示の初期化
     draw_hold_field(null); // Hold表示の初期化
 
