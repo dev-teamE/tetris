@@ -47,7 +47,7 @@ export class SubCanvas extends Canvas {
     }
 
     getTetroSize(matrix) {
-        const size = matrix.length * holdCanvas.blockSize;
+        const size = matrix.length * blockSize;
         return size;
     }
 
