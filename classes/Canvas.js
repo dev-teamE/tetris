@@ -1,4 +1,4 @@
-import { calculateDisplayPosition, createPiece } from "./app.js";
+import { player, tetro, calculateDisplayPosition, createPiece } from "./app.js";
 
 class Canvas {
     constructor(canvasId, blockSize, row, col) {
@@ -77,7 +77,7 @@ export class SubCanvas extends Canvas {
             row.forEach((value, x) => {
                 if (value !== 0) {
                     tempCtx.drawImage(
-                        imgs[value],
+                        tetro.imgs[value],
                         x * this.blockSize,
                         y * this.blockSize,
                         this.blockSize,
