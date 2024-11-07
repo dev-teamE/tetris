@@ -18,11 +18,11 @@ const holdCanvas = SubCanvas("holdCanvas", 20, 5, 5);
 const nextCanvas = SubCanvas("nextCanvas", 20, 5, 5);
 const followingCanvas = SubCanvas("followingCanvas", 20, 14, 5);
 
-// 板垣担当関数
 /**
  * プレイヤーの状態をテトロミノを初期位置に表示する状態にする
  * @param {Player} player  - 更新するPlayerクラスのインスタンス
  * @param {MainCanvas} mainCanvas - 更新するMainCanvasクラスのインスタンス
+ * @param {Game} game - Gameクラスのインスタンス
  * @returns {boolean} - 配置直後に衝突した場合False、そうでない場合Trueを返す
  * @requires getNextTetromino - 外部関数
  * @requires createPiece - 外部関数
@@ -32,8 +32,8 @@ const followingCanvas = SubCanvas("followingCanvas", 20, 14, 5);
  * @requires gameOver - 外部関数
  * @requires ghostTetrimono - 外部関数
  */
-function playerReset(player, mainCanvas) {
-  player.currentTetroType = getNextTetromino();
+function playerReset(player, mainCanvas, game) {
+  player.currentTetroType = getNextTetromino(player);
   player.matrix = createPiece(player.currentTetroType);
   player.rotation = 0; // ミノの回転軸を０に戻す
   player.moveOrRotateCount = 1;
@@ -42,15 +42,15 @@ function playerReset(player, mainCanvas) {
   player.pos.x = (mainCanvas.arena[0].length / 2 | 0) - (player.matrix[0].length / 2 | 0);
   player.currentLastYPos = lastYPos(player, player.matrix);
 
-  drawNextPieces();
+  drawNextPieces(player.nextPieces);
 
   // // ゲームオーバー
   // 配置直後に衝突判定
-  if (collide(arena, player)) {
-    gameOver();
+  if (collide(mainCanvas, player)) {
+    gameOver(mainCanvas, player, game);
     return false; // ゲームオーバーを示すfalseを返す
   }
-  ghostTetrimono();
+  ghostTetrimono(mainCanvas, player);
   return true; // 正常にリセットされたことを示すtrueを返す
 }
 
@@ -65,12 +65,11 @@ function playerReset(player, mainCanvas) {
  * @requires drawNextPieces - 外部関数
  * @requires playerReset - 内部関数
  * @requires lastYPos - 外部関数
- * @requires drawNextPieces - 外部関数
  * @requires collide -外部関数
  * @requires gameOver - 外部関数
  * @requires play_sounds - 外部関数
  */
-function playerHold(player, mainCanvas) {
+function playerHold(player, mainCanvas, game, sound) {
     if (!player.holdUsed) {
         if (player.holdTetroType != null) {// 2回目以降のホールド時の処理
             player.holdUsed = true;
@@ -84,23 +83,23 @@ function playerHold(player, mainCanvas) {
             // 位置を真ん中にする
             player.pos.y = 0;
             player.pos.x = (mainCanvas.arena[0].length / 2 | 0) - (player.matrix[0].length / 2 | 0)
-            ghostTetrimono()
+            ghostTetrimono(mainCanvas, player)
             draw_hold_field(player.holdTetroType);
-            drawNextPieces();
+            drawNextPieces(player.nextPieces);
             // // ゲームオーバー
             // 配置直後に衝突判定
             if (collide(mainCanvas, player)) {
-              gameOver();
+              gameOver(mainCanvas, player, game);
               return false; // ゲームオーバーを示すfalseを返す
             }
             return true; // 正常にリセットされたことを示すtrueを返す
           } else {// １回目のホールド時の処理
             player.holdUsed = true;
             player.holdTetroType = player.currentTetroType;
-            playerReset(player, mainCanvas);
+            playerReset(player, mainCanvas, game);
             draw_hold_field(player.holdTetroType);
           }
-          play_sounds(hold_sound)
+          play_sounds(sound.hold_sound)
       }
 }
 
@@ -112,10 +111,10 @@ function playerHold(player, mainCanvas) {
  * @requires playerDrop - テトロミノを１つ下に移動する処理を行う外部関数
  * @returns 
  */
-function moveReset(player, mainCanvas, game) {
+function moveReset(player, mainCanvas, game, sound) {
   if (player.moveOrRotateCount > 15) { // 16回以上回転・移動した場合即ロックダウン
     if (player.pos.x == player.ghost.pos.x && player.pos.y == player.ghost.pos.y) {
-      playerDrop(player, mainCanvas, game);
+      playerDrop(player, mainCanvas, game, sound);
     }
     return;
   } else { // 16回未満の場合はロックダウンカウントをリセットする
@@ -134,18 +133,18 @@ function moveReset(player, mainCanvas, game) {
  * @requires moveReset - 内部関数
  * @requires plar_sounds - 外部関数
  */
-function playerMove(dir, player, mainCanvas) { // 左右に現在地を移動する
+function playerMove(dir, player, mainCanvas, game, sound) { // 左右に現在地を移動する
   let temp = player.pos.x
   player.pos.x += dir;
 
-  if (collide(arena, player)) {
+  if (collide(mainCanvas, player)) {
     player.pos.x -= dir
   }
-  ghostTetrimono()
+  ghostTetrimono(mainCanvas, player)
   if (player.isTouchingGround && temp != player.pos.x) { // ミノが床に接した後に移動が成功した場合に移動リセットを行う
-    moveReset();
+    moveReset(player, mainCanvas, game, sound);
   }
-  play_sounds(move_sound)
+  play_sounds(sound.move_sound)
 }
 
 /**
@@ -190,21 +189,21 @@ function activeTouchingGround(player) {
  * @requires playerReset - プレイヤー・テトロミノの状態をリセットする外部関数
  * @requires updateScore - 点数表示のUIを更新する外部関数
  */
-function playerDrop(player, mainCanvas, game) {
+function playerDrop(player, mainCanvas, game, sound) {
   player.pos.y++
   game.lastTime = game.currentTime;
   player.currentLastYPos = lastYPos(player, player.matrix);
   handleMoveOrTotateCount(player);
   activeTouchingGround(player);
-  if (collide(arena, player)) {
+  if (collide(mainCanvas, player)) {
     player.pos.y--;
-    merge(arena, player)
+    merge(mainCanvas, player, sound)
     arenaSweep()
-    if (!playerReset(player, mainCanvas)) {
+    if (!playerReset(player, mainCanvas, game)) {
       // playerResetがfalseを返した場合（ゲームオーバー時）、ここで処理を終了
       return;
     }
-    updateScore()
+    updateScore(player)
     player.holdUsed = false;
   }
   player.tSpin = false; // ロックできなかった場合は、tSpinの判定をfalseにする
@@ -221,17 +220,17 @@ function playerDrop(player, mainCanvas, game) {
  * @requires playerReset - プレイヤー・テトロミノの状態をリセットする外部関数
  * @requires updateScore - 点数表示のUIを更新する外部関数
  */
-function playerHardDrop(player, mainCanvas, game) {
+function playerHardDrop(player, mainCanvas, game, sound) {
   while (player.pos.y < player.ghost.pos.y) player.pos.y++
-  merge(mainCanvas.arena, player)
-  draw()
+  merge(mainCanvas, player, sound)
+  draw(mainCanvas)
   arenaSweep()
-  if (!playerReset()) {
+  if (!playerReset(player, mainCanvas, game)) {
     // playerResetがfalseを返した場合（ゲームオーバー時）、ここで処理を終了
     return;
   }
   // arenaSweep()
-  updateScore()
+  updateScore(player)
   player.holdUsed = false;
   game.currentTime = 0;
 }
@@ -241,7 +240,7 @@ function playerHardDrop(player, mainCanvas, game) {
  * @param {Player} player - Playerクラスのインスタンス
  * @requires play_sounds - 外部関数
  */
-function merge(mainCanvas, player) {
+function merge(mainCanvas, player, sound) {
   player.matrix.forEach((row, y) => {
     row.forEach((value, x) => {
       if (value !== 0) {
@@ -249,120 +248,14 @@ function merge(mainCanvas, player) {
       }
     })
   })
-  play_sounds(drop_sound)
-}
-
-/**
- * プレイヤーの状態をテトロミノを初期位置に表示する状態にする
- * @param {Player} player  - 更新するPlayerクラスのインスタンス
- * @param {MainCanvas} mainCanvas - 更新するMainCanvasクラスのインスタンス
- * @returns {boolean} - 配置直後に衝突した場合False、そうでない場合Trueを返す
- * @requires getNextTetromino - 外部関数
- * @requires createPiece - 外部関数
- * @requires lastYPos - 外部関数
- * @requires drawNextPieces - 外部関数
- * @requires collide -外部関数
- * @requires gameOver - 外部関数
- * @requires ghostTetrimono - 外部関数
- */
-function playerReset(player, mainCanvas) {
-  player.currentTetroType = getNextTetromino();
-  player.matrix = createPiece(player.currentTetroType);
-  player.rotation = 0; // ミノの回転軸を０に戻す
-  player.moveOrRotateCount = 1;
-  player.isTouchingGround = false;
-  player.pos.y = 0;
-  player.pos.x = (mainCanvas.arena[0].length / 2 | 0) - (player.matrix[0].length / 2 | 0);
-  player.currentLastYPos = lastYPos(player, player.matrix);
-
-  drawNextPieces();
-
-  // // ゲームオーバー
-  // 配置直後に衝突判定
-  if (collide(arena, player)) {
-    gameOver();
-    return false; // ゲームオーバーを示すfalseを返す
-  }
-  ghostTetrimono();
-  return true; // 正常にリセットされたことを示すtrueを返す
-}
-
-/**
- * プレイヤーの状態をテトロミノを初期位置に表示する状態にする
- * @param {Player} player  - 更新するPlayerクラスのインスタンス
- * @param {MainCanvas} mainCanvas - 更新するMainCanvasクラスのインスタンス
- * @returns {boolean} - 配置直後に衝突した場合False、そうでない場合Trueを返す
- * @requires createPiece - 外部関数
- * @requires ghostTetrimono - 外部関数
- * @requires draw_hold_field - 外部関数
- * @requires drawNextPieces - 外部関数
- * @requires playerReset - 内部関数
- * @requires lastYPos - 外部関数
- * @requires drawNextPieces - 外部関数
- * @requires collide -外部関数
- * @requires gameOver - 外部関数
- * @requires play_sounds - 外部関数
- */
-function playerHold(player, mainCanvas) {
-    if (!player.holdUsed) {
-        if (player.holdTetroType != null) {// 2回目以降のホールド時の処理
-            player.holdUsed = true;
-            let temp = player.currentTetroType;
-            player.currentTetroType = player.holdTetroType;
-            player.holdTetroType = temp;
-            player.rotation = 0;
-            player.matrix = createPiece(player.currentTetroType);
-            player.moveOrRotateCount = 1;
-            player.isTouchingGround = false;
-            // 位置を真ん中にする
-            player.pos.y = 0;
-            player.pos.x = (mainCanvas.arena[0].length / 2 | 0) - (player.matrix[0].length / 2 | 0)
-            ghostTetrimono()
-            draw_hold_field(player.holdTetroType);
-            drawNextPieces();
-            // // ゲームオーバー
-            // 配置直後に衝突判定
-            if (collide(mainCanvas, player)) {
-              gameOver();
-              return false; // ゲームオーバーを示すfalseを返す
-            }
-            return true; // 正常にリセットされたことを示すtrueを返す
-          } else {// １回目のホールド時の処理
-            player.holdUsed = true;
-            player.holdTetroType = player.currentTetroType;
-            playerReset(player, mainCanvas);
-            draw_hold_field(player.holdTetroType);
-          }
-          play_sounds(hold_sound)
-      }
-}
-
-/**
- * moveOrRotateCountによって以下の処理を実施する
- * - 16以上の場合、playerDropを実施する（即ロックダウン）
- * - 16未満の場合、moveOrRotateCountを１増加させ、ロックまでの時間をリセットする
- * @param {Player} player - 更新するPlayerクラスのインスタンス
- * @requires playerDrop - テトロミノを１つ下に移動する処理を行う外部関数
- * @returns 
- */
-function moveReset(player, mainCanvas, game) {
-  if (player.moveOrRotateCount > 15) { // 16回以上回転・移動した場合即ロックダウン
-    if (player.pos.x == player.ghost.pos.x && player.pos.y == player.ghost.pos.y) {
-      playerDrop(player, mainCanvas, game);
-    }
-    return;
-  } else { // 16回未満の場合はロックダウンカウントをリセットする
-    player.moveOrRotateCount++;
-    game.lastTime = game.currentTime;
-    return;
-  }
+  play_sounds(sound.drop_sound)
 }
 
 /**
  * キーイベントのバインディングを初期化する関数。
  */
 function initializeKeyBindings() {
-  document.addEventListener('keydown', (event) => handleKeydown(event, player, game, mainCanvas));
+  document.addEventListener('keydown', (event) => handleKeydown(event, player, game, mainCanvas, sound));
 }
 
 /**
@@ -371,33 +264,30 @@ function initializeKeyBindings() {
 * @requires playerMove - 外部関数
 * @requires playerDrop - 外部関数
 * @requires playerHardDrop - 外部関数
-* @requires rotate - 外部関数
-* @requires collisionOnRotate - 外部関数
-* @requires afterRotate - 外部関数
-* @requires clockwisSrs - 外部関数
-* @requires playerResetAfterHold - 外部関数
+* @requires playerRotate - 外部関数
+* @requires playerHold - 外部関数
 */
-function handleKeydown(event, player, game, mainCanvas) {
+function handleKeydown(event, player, game, mainCanvas, sound) {
   if (!game.gameActive) return;
   switch (event.key) {
     case 'ArrowLeft':
-      playerMove(-1);
+      playerMove(-1, player, mainCanvas, game, sound);
       break;
     case 'ArrowRight':
-      playerMove(1);
+      playerMove(1, player, mainCanvas, game, sound);
       break;
     case 'ArrowDown':
-      playerDrop();
+      playerDrop(player, mainCanvas, game, sound);
       break;
     // ハードドロップと回転を入れる
     case 'ArrowUp':
-      playerHardDrop();
+      playerHardDrop(player, mainCanvas, game, sound);
       break;
     case ' ': // スペースを押した時の処理
-      playerRotate();
+      playerRotate(player, mainCanvas, sound, game);
       break;
     case 'Shift': // Shiftを押した時の処理
-      playerHold(player, mainCanvas);
+      playerHold(player, mainCanvas, game, sound);
       break;
   }
 }
@@ -415,6 +305,280 @@ function initializeUIBindings() {
       pauseGame();
       document.getElementById("pauseButton").blur(); // ボタンからフォーカスを外す 
   })
+}
+/**
+ * テトロミノの２次元配列を時計回りに90度回転させた２次元配列を返す
+ * @param {number[][]} tetroMatrix -  数値の２次元配列
+ * @return {number[][]}  -  数値の２次元配列
+ * @requires play_sounds - 外部関数
+ */
+function rotate(tetroMatrix) {
+  let newTetro = []; // 回転後の情報を格納する配列
+  let currentTetroSize = tetroMatrix.length; 
+  for (let y = 0; y < currentTetroSize; y++) {
+    newTetro[y] = [];
+    for (let x = 0; x < currentTetroSize; x++) {
+      newTetro[y][x] = tetroMatrix[currentTetroSize - x - 1][y];
+    }
+  }
+  return newTetro;
+}
+
+/**
+ * playerインスタンスの現在のrotationプロバティを更新する
+ * @param {Player} player -  更新するPlayerクラスのインスタンス
+ */
+function updateRotationAxis(player) { 
+  if (player.rotation == 3) {
+    player.rotation = 0;
+  } else {
+    player.rotation += 1;
+  }
+}
+/**
+ * スーパーローテーションシステム(SRS)を使ってplayerインスタンスのposプロパティを更新する
+ * @param {Player} player - 更新するPlayerクラスのインスタンス 
+ * @param {MainCanvas} mainCanvas  - 衝突判定を行うMainCanvasクラスのインスタンス
+ * @requires rotate - テトロミノの２次元配列を時計回りに90度回転させた２次元配列を返す内部関数
+ * @requires collisionOnRotate - 座標と２次元配列を受け取り、その配列がCanvasインスタンスと衝突するかどうか判定する内部関数
+ * @requires afterRotate - playerインスタンスのmaxLastYpos、matrix、tSpinプロパティを更新する(テトロミノの回転動作後の処理をする)内部関数
+ * 
+ */
+function clockwisSrs(player, mainCanvas, sound, game) { 
+  let rotatedTetro = rotate(player.matrix)// 回転後のテトリミノの2次元配列
+  let xPos = player.pos.x
+  let yPos = player.pos.y
+  // SRSは現在の描画しているテトロミノが”I”と”I以外”で処理が異なる
+  // テトロミノの回転軸によって処理が異なる
+  if (player.currentTetroType == "I") {
+    if (player.rotation == 0) {
+      if (collisionOnRotate(xPos - 2, yPos, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos - 2
+        player.pos.y = yPos
+      } else if (collisionOnRotate(xPos + 1, yPos, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos + 1
+        player.pos.y = yPos
+      } else if (collisionOnRotate(xPos - 2, yPos + 1, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos - 2
+        player.pos.y = yPos + 1
+      } else if (collisionOnRotate(xPos + 1, yPos - 2, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos + 1
+        player.pos.y = yPos - 2
+      } else {
+        return; 
+      }
+      afterRotate(player, tetroMatrix, sound, mainCanvas, game);
+    } else if (player.rotation == 1) {
+      if (collisionOnRotate(xPos - 1, yPos, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos - 1
+        player.pos.y = yPos
+      } else if (collisionOnRotate(xPos + 2, yPos, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos + 2
+        player.pos.y = yPos
+      } else if (collisionOnRotate(xPos - 1, yPos - 2, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos - 1
+        player.pos.y = yPos - 2
+      } else if (collisionOnRotate(xPos + 2, yPos + 1, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos + 2
+        player.pos.y = yPos + 1
+      } else {
+        return; 
+      }
+      afterRotate(player, tetroMatrix, sound, mainCanvas, game);
+    } else if (player.rotation == 2) {
+      if (collisionOnRotate(xPos + 2, yPos, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos + 2
+        player.pos.y = yPos
+      } else if (collisionOnRotate(xPos - 1, yPos, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos - 1
+        player.pos.y = yPos
+      } else if (collisionOnRotate(xPos + 2, yPos - 1, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos + 2
+        player.pos.y = yPos - 1
+      } else if (collisionOnRotate(xPos - 1, yPos + 2, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos - 1
+        player.pos.y = yPos + 2
+      } else {
+        return;
+      }
+      afterRotate(player, tetroMatrix, sound, mainCanvas, game);
+    } else if (player.rotation == 3) {
+      if (collisionOnRotate(xPos - 2, yPos, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos - 2
+        player.pos.y = yPos
+      } else if (collisionOnRotate(xPos + 1, yPos, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos + 1
+        player.pos.y = yPos
+      } else if (collisionOnRotate(xPos + 1, yPos + 2, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos + 1
+        player.pos.y = yPos + 2
+      } else if (collisionOnRotate(xPos - 2, yPos - 1, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos - 2
+        player.pos.y = yPos - 1
+      } else {
+        return; 
+      }
+      afterRotate(player, tetroMatrix, sound, mainCanvas, game);
+    }
+  } else {
+    if (player.rotation == 0) {
+      if (collisionOnRotate(xPos - 1, yPos, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos - 1
+        player.pos.y = yPos
+      } else if (collisionOnRotate(xPos - 1, yPos - 1, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos - 1
+        player.pos.y = yPos - 1
+      } else if (collisionOnRotate(xPos, yPos - 2, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos
+        player.pos.y = yPos - 2
+      } else if (collisionOnRotate(xPos - 1, yPos - 2, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos - 1
+        player.pos.y = yPos - 2
+      } else {
+        return; 
+      }
+      afterRotate(player, tetroMatrix, sound, mainCanvas, game);
+    } else if (player.rotation == 1) {
+      if (collisionOnRotate(xPos + 1, yPos, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos + 1
+        player.pos.y = yPos
+      } else if (collisionOnRotate(xPos + 1, yPos - 1, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos + 1
+        player.pos.y = yPos - 1
+      } else if (collisionOnRotate(xPos, yPos - 2, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos
+        player.pos.y = yPos - 2
+      } else if (collisionOnRotate(xPos + 1, yPos - 2, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos + 1
+        player.pos.y = yPos - 2
+      } else {
+        return;
+      }
+      afterRotate(player, tetroMatrix, sound, mainCanvas, game);
+    } else if (player.rotation == 2) {
+      if (collisionOnRotate(xPos + 1, yPos, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos + 1
+        player.pos.y = yPos
+      } else if (collisionOnRotate(xPos + 1, yPos + 1, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos + 1
+        player.pos.y = yPos + 1
+      } else if (collisionOnRotate(xPos, yPos - 2, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos
+        player.pos.y = yPos - 2
+      } else if (collisionOnRotate(xPos + 1, yPos - 2, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos + 1
+        player.pos.y = yPos - 2
+      } else {
+        return; 
+      }
+      afterRotate(player, tetroMatrix, sound, mainCanvas, game);
+    } else if (player.rotation == 3) {
+      if (collisionOnRotate(xPos - 1, yPos, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos - 1
+        player.pos.y = yPos
+      } else if (collisionOnRotate(xPos - 1, yPos - 1, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos - 1
+        player.pos.y = yPos - 1
+      } else if (collisionOnRotate(xPos, yPos + 2, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos
+        player.pos.y = yPos + 2
+      } else if (collisionOnRotate(xPos + 1, yPos + 2, rotatedTetro, mainCanvas)) {
+        player.pos.x = xPos + 1
+        player.pos.y = yPos + 2
+      } else {
+        return; 
+      }
+      afterRotate(player, tetroMatrix, sound, mainCanvas, game);
+    }
+  }
+}
+/**
+ * playerインスタンスのmaxLastYpos、matrix、tSpinプロパティを更新する(テトロミノの回転動作後の処理をする)
+ * @param {Player} player - 更新するPlayerクラスのインスタンス
+ * @param {number[][]} tetroMatrix- テトロミノの２次元配列（回転後の2次元配列を想定）
+ * @param {Sound} sound - 更新するPlayerクラスのインスタンス
+ * @param {MainCanvas} mainCanvas - 更新するPlayerクラスのインスタンス
+ * @param {Game} game - 更新するPlayerクラスのインスタンス
+ * @requires lastYPos - 現在の描画位置から、渡されたテトロミノを描画した場合に、一番下に位置するブロックの行番号を返す内部関数
+ * @requires play_sound - 外部関数
+ * @requires ghostTetrimono - ゴーストの表示位置を更新する外部関数
+ * @requires updateRotationAxis - playerインスタンスのrotationプロバティを更新する内部関数
+ * @requires moveReset - 外部関数
+ */
+function afterRotate(player, tetroMatrix, sound, mainCanvas, game) {
+  player.maxLastYpos = Math.max(player.maxLastYpos, player.currentLastYPos, lastYPos(player, tetroMatrix)); // 回転前の一番下だった時のy座標と回転後のy座標で大きい方を保持する
+  player.matrix = tetroMatrix;
+  play_sounds(sound.rotate_sound);
+  ghostTetrimono(mainCanvas, player); 
+  updateRotationAxis(player);
+  if (player.tetroType === "T") {
+    player.tSpin = true;
+  }
+  if (player.isTouchingGround) {
+    moveReset(player, mainCanvas, game, sound);
+  }
+}
+
+/**
+ * xy座標と２次元配列を受け取り、その配列がCanvasインスタンスのarenaと衝突するかどうか判定する
+ * @param {number} xPos - 衝突判定を行いたいx座標
+ * @param {number} yPos - 衝突判定を行いたいy座標
+ * @param {number[][]} tetroMatrix - テトロミノの２次元配列（回転後のテトロミノの2次元配列）
+ * @param {Canvas} mainCanvas - 衝突判定を行う対象のMainCanvasクラスのインスタンス
+ * @returns {boolean} 受け取ったテトロミノが衝突しない場合'true'、そうでなければ'false'を返す
+ */
+function collisionOnRotate(xPos, yPos, tetroMatrix, mainCanvas) {
+  for (let y = 0; y < tetroMatrix.length; y++) {
+    for (let x = 0; x < tetroMatrix.length; x++) {
+      if (tetroMatrix[y][x] != 0) {
+        let newXPos = xPos + x;
+        let newYPos = yPos + y;
+        if (newYPos < 0 || // 描画位置がフィールドの範囲外になる場合
+            newXPos < 0 || // 描画位置がフィールドの範囲外になる場合
+            newYPos >= mainCanvas.row || // 描画位置がフィールドの範囲外になる場合
+            newXPos >= mainCanvas.col || // 描画位置がフィールドの範囲外になる場合
+            mainCanvas.arena[newYPos][newXPos] != 0) { // 描画位置にすでにテトリミノが存在する場合
+            return false;
+        }
+      }
+    }
+  }
+  return true;
+}
+
+/**
+ * 現在の描画位置から、渡されたテトロミノを描画した場合に、一番下に位置するブロックの行番号を返す
+ * @param {Player} player -  更新するPlayerクラスのインスタンス
+ * @param {number[][]} tetroMatrix - テトロミノの２次元配列
+ * @returns {number|null} テトロミノブロックが描画される一番下の行番号と現在の表示位置を合計した値
+ * ブロックがない場合はnullを返す
+ */
+function lastYPos(player, tetromatrix) { 
+  for (let y = tetromatrix.length - 1; y >= 0; y--) {
+    if (tetromatrix[y].some(value => value !== 0)) {
+      return y + player.pos.y
+    }
+  }
+  return null;
+}
+
+/**
+ * テトロミノを回転させる処理
+ * @param {*} player 
+ * @param {*} mainCanvas 
+ * @requires rotate - 内部関数
+ * @requires collisionOnRotate - 内部関数
+ * @requires afterRotate - 内部関数
+ * @requires clockwisSrs - 内部関数
+ */
+function playerRotate(player, mainCanvas, sound, game) {
+  let newTetro = rotate(player.matrix)// 回転後のテトリミノの描画情報new_tetro
+  // 回転後のテトリミノの描画位置が他のミノの衝突しない場合のみ、現在のテトロミノの描画を変更する
+  if (collisionOnRotate(player.pos.x, player.pos.y, newTetro, mainCanvas)) {
+    afterRotate(player, newTetro, sound, mainCanvas, game);
+  } else { // 通常の動作で回転できない時SRSで判定する
+    clockwisSrs(player, mainCanvas, sound, game);
+  }
 }
 
 // 表示用の開始位置を計算する関数（NEXTとHOLD用）
@@ -502,7 +666,7 @@ function generateSevenBag() {
 }
 
 // 次のテトロミノを取得する関数（ゲーム開始時とミノがロックされた時に呼び出す）
-function getNextTetromino() {
+function getNextTetromino(player) {
   if (player.nextPieces.length <= 7) {
     player.nextPieces = player.nextPieces.concat(generateSevenBag());
   }
