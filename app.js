@@ -19,6 +19,32 @@ const nextCanvas = SubCanvas("nextCanvas", 20, 5, 5);
 const followingCanvas = SubCanvas("followingCanvas", 20, 14, 5);
 
 /**
+ * キーイベントのバインディングを初期化する関数。
+ */
+document.addEventListener('keydown', (event) => handleKeydown(event, player, game, mainCanvas, sound));
+
+/**
+* UI要素のイベントリスナーを初期化する関数。
+* @requires restartGame - 外部関数
+* @requires gameStart - 外部関数
+* @requires pauseGame - 外部関数
+*/
+
+document.getElementById('restartButton').addEventListener('click', function(){
+  restartGame(mainCanvas, player, game, sound)
+});
+document.getElementById('homeButton').addEventListener('click', function(){
+  restartGame(mainCanvas, player, game, sound)
+});
+document.getElementById('start').addEventListener('click', function() {
+  gameStart(mainCanvas, player, game, sound)
+});
+document.getElementById("pauseButton").addEventListener("click", function() {
+    pauseGame(player, game);
+    document.getElementById("pauseButton").blur(); // ボタンからフォーカスを外す 
+})
+
+/**
  * プレイヤーの状態をテトロミノを初期位置に表示する状態にする
  * @param {Player} player  - 更新するPlayerクラスのインスタンス
  * @param {MainCanvas} mainCanvas - 更新するMainCanvasクラスのインスタンス
@@ -251,12 +277,7 @@ function merge(mainCanvas, player, sound) {
   play_sounds(sound.drop_sound)
 }
 
-/**
- * キーイベントのバインディングを初期化する関数。
- */
-function initializeKeyBindings() {
-  document.addEventListener('keydown', (event) => handleKeydown(event, player, game, mainCanvas, sound));
-}
+
 
 /**
 * キーイベントの処理を行う関数。
@@ -291,21 +312,7 @@ function handleKeydown(event, player, game, mainCanvas, sound) {
       break;
   }
 }
-/**
-* UI要素のイベントリスナーを初期化する関数。
-* @requires restartGame - 外部関数
-* @requires gameStart - 外部関数
-* @requires pauseGame - 外部関数
-*/
-function initializeUIBindings() {
-  document.getElementById('restartButton').addEventListener('click', restartGame);
-  document.getElementById('homeButton').addEventListener('click', restartGame);
-  document.getElementById('start').addEventListener('click', gameStart);
-  document.getElementById("pauseButton").addEventListener("click", function() {
-      pauseGame();
-      document.getElementById("pauseButton").blur(); // ボタンからフォーカスを外す 
-  })
-}
+
 /**
  * テトロミノの２次元配列を時計回りに90度回転させた２次元配列を返す
  * @param {number[][]} tetroMatrix -  数値の２次元配列
@@ -1114,7 +1121,7 @@ function update(MainCanvas, Player, Game, Sound) {
 
     if (!(Player.pos.x == Player.ghost.pos.x && Player.pos.y == Player.ghost.pos.y)) { //ミノが床に接していない時(通常のドロップ)
       if (Game.currentTime - Game.lastTime >= Game.dropInterval) {
-        playerDrop(Player, MainCanvas, Game, Sound));
+        playerDrop(Player, MainCanvas, Game, Sound);
 
         if (collide(mainCanvas, player)) {
           return;
@@ -1194,7 +1201,7 @@ async function load_image(path) {
   )
 };
 
-async function loading(MainCanvas, Player, Tetro, Sound) {
+async function loading(MainCanvas, Player, Tetro, Sound, Game) {
   try {
     MainCanvas.screen = await load_image("./assets/Board/Board.png");
     Tetro.imgJ = await load_image("./assets/Single Blocks/Blue.png");
@@ -1234,3 +1241,4 @@ async function loading(MainCanvas, Player, Tetro, Sound) {
     console.log(err);
   }
 }
+loading(mainCanvas, player, tetro, sound, game)
