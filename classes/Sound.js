@@ -1,12 +1,12 @@
 export class Sound {
 
     constructor() {
-        bgm_sound = null;
-        drop_sound = null;
-        hold_sound = null;
-        clear_sound = null;
-        move_sound = null;
-        rotate_sound = null;
+        this.bgm_sound = null;
+        this.drop_sound = null;
+        this.hold_sound = null;
+        this.clear_sound = null;
+        this.move_sound = null;
+        this.rotate_sound = null;
     }
 }
 
