@@ -75,27 +75,11 @@
                 <h3>Next</h3>
                 <canvas class="box" id="nextCanvas"></canvas>
                 <canvas class="box" id="followingCanvas"></canvas>
-                <button id="homeButton" onclick="showStartScreen()">⌂</button>
+                <button id="homeButton" onclick=</button>>⌂</button>
             </div>
         </div>
     </div>
     <script src="./app.js" type="module"></script>
-    <script>
-        // DOM読み込み後に実行する関数
-        document.addEventListener("DOMContentLoaded", () => {
-            window.showPlayScreen = function () {
-                document.getElementById("startScreen").style.display = "none";
-                document.getElementById("playScreen").style.display = "flex";
-            };
-        });
-        document.addEventListener("DOMContentLoaded", () => {
-            window.showStartScreen = function () {
-                document.getElementById("startScreen").style.display = "flex";
-                document.getElementById("playScreen").style.display = "none";
-                restartGame()
-            };
-        });
-    </script>
 </body>
 
 </html>

@@ -1242,3 +1242,19 @@ async function loading(MainCanvas, Player, Tetro, Sound, Game) {
   }
 }
 loading(mainCanvas, player, tetro, sound, game)
+
+
+// DOM読み込み後に実行する関数
+document.addEventListener("DOMContentLoaded", () => {
+  window.showPlayScreen = function () {
+      document.getElementById("startScreen").style.display = "none";
+      document.getElementById("playScreen").style.display = "flex";
+  };
+});
+document.addEventListener("DOMContentLoaded", () => {
+  window.showStartScreen = function () {
+      document.getElementById("startScreen").style.display = "flex";
+      document.getElementById("playScreen").style.display = "none";
+      restartGame(MainCanvas, Player, Game, Sound, Tetro)
+  };
+});
