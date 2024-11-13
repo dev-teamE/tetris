@@ -1,4 +1,4 @@
-export class Tetrominoes {
+export class Tetro {
     constructor() {
         this.tetrominoes = ['T', 'O', 'L', 'J', 'I', 'S', 'Z'];
         this.nextPieces = this.generateSevenBag();

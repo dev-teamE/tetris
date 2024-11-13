@@ -1,14 +1,14 @@
 import { Player } from './Player.js';
-import { Tetrominoes } from './Tetrominoes.js';
+import { Tetro } from './Tetro.js';
 import { Canvas } from './Canvas.js';
-import { SoundManager } from './SoundManager.js';
+import { Sound } from './Sound.js';
 
 export class Game {
     constructor() {
         this.player = new Player(this);
-        this.tetrominoes = new Tetrominoes();
+        this.tetrominoes = new Tetro();
         this.canvas = new Canvas(this);
-        this.soundManager = new SoundManager();
+        this.soundManager = new Sound();
 
         this.lastTime = 0;
         this.currentTime = 0;

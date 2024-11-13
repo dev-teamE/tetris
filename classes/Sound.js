@@ -1,4 +1,4 @@
-export class SoundManager {
+export class Sound {
     constructor() {
         this.sounds = {
             bgm: null,
