@@ -6,9 +6,9 @@ import { Sound } from './Sound.js';
 export class Game {
     constructor() {
         this.player = new Player(this);
-        this.tetrominoes = new Tetro();
+        this.tetro = new Tetro();
         this.canvas = new Canvas(this);
-        this.soundManager = new Sound();
+        this.sound = new Sound();
 
         this.lastTime = 0;
         this.currentTime = 0;
@@ -40,12 +40,12 @@ export class Game {
             });
 
             await Promise.all(promises); // 画像のロードが完了するまで待つ
-            await this.soundManager.loadSounds(); // サウンドのロードが完了するまで待つ
+            await this.sound.loadSounds(); // サウンドのロードが完了するまで待つ
 
             // 初期表示の設定
             this.canvas.updateScore(this.player);
             this.canvas.updateLevel(this.player);
-            this.canvas.drawNextPieces(this.tetrominoes.nextPieces);
+            this.canvas.drawNextPieces(this.tetro.nextPieces);
 
             // ゲーム開始
             this.gameStart();
@@ -149,7 +149,7 @@ export class Game {
         this.canvas.draw_hold_field(null);
         this.canvas.updateScore(this.player);
         this.canvas.updateLevel(this.player);
-        this.tetrominoes.nextPieces = this.tetrominoes.generateSevenBag();
+        this.tetro.nextPieces = this.tetro.generateSevenBag();
         this.player.playerReset();
         this.lastTime = 0;
         this.player.startTime = Date.now();
@@ -162,7 +162,7 @@ export class Game {
         document.getElementById('restartButton').style.display = 'none';
         document.getElementById('pauseButton').style.display = 'block'; // pauseButtonを表示
 
-        this.soundManager.play_bgm(this.soundManager.bgm_sound);
+        this.sound.play_bgm(this.sound.bgm_sound);
         this.update();
     }
 
@@ -171,7 +171,7 @@ export class Game {
             this.gameActive = false;
             cancelAnimationFrame(this.animationId);
             document.getElementById("pauseButton").innerText = "▷";
-            this.soundManager.pause_bgm(this.soundManager.bgm_sound);
+            this.sound.pause_bgm(this.sound.bgm_sound);
             this.pauseStartTime = Date.now(); // pauseStartTimeを設定
         } else {
             this.gameActive = true;
@@ -179,7 +179,7 @@ export class Game {
             this.player.startTime += pauseDuration;
             this.update();
             document.getElementById("pauseButton").innerText = "⏸";
-            this.soundManager.play_bgm(this.soundManager.bgm_sound);
+            this.sound.play_bgm(this.sound.bgm_sound);
         }
     }
 
@@ -203,12 +203,12 @@ export class Game {
         this.pauseStartTime = null;
     
         // テトロミノの初期化
-        this.tetrominoes.nextPieces = this.tetrominoes.generateSevenBag();
+        this.tetro.nextPieces = this.tetro.generateSevenBag();
         
         // キャンバスの更新
         this.canvas.clearCanvas();
         this.canvas.draw_hold_field(null);
-        this.canvas.drawNextPieces(this.tetrominoes.nextPieces);
+        this.canvas.drawNextPieces(this.tetro.nextPieces);
         this.canvas.updateScore(this.player);
         this.canvas.updateLevel(this.player);
     
@@ -218,7 +218,7 @@ export class Game {
         document.getElementById('pauseButton').style.display = 'block';
     
         // サウンド
-        this.soundManager.play_bgm(this.soundManager.bgm_sound);
+        this.sound.play_bgm(this.sound.bgm_sound);
     
         // コントロール再バインドとゲーム開始
         this.bindControls();
