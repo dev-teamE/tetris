@@ -134,7 +134,7 @@ export class Canvas {
     }
 
     drawTetro(tetroType, { canvas, context }, scale = 1) {
-        const matrix = this.game.tetrominoes.createPiece(tetroType);
+        const matrix = this.game.tetro.createPiece(tetroType);
         const blockSize = 20;
         const canvasWidth = canvas.width;
         const canvasHeight = canvas.height;
@@ -193,7 +193,7 @@ export class Canvas {
         for (let i = 1; i < Math.min(6, pieces.length); i++) {
             const verticalSpacing = 20 * 2.65;
             const yOffset = (i - 1) * verticalSpacing;
-            const matrix = this.game.tetrominoes.createPiece(pieces[i]);
+            const matrix = this.game.tetro.createPiece(pieces[i]);
             const blockSize = 20;
 
             const tetroSize = matrix.length * blockSize;
@@ -274,7 +274,7 @@ export class Canvas {
             this.checkLevelUp(this.game.player);
             this.updateScore(this.game.player);
 
-            this.game.soundManager.play_sounds(this.game.soundManager.clear_sound);
+            this.game.sound.play_sounds(this.game.sound.clear_sound);
         } else {
             this.game.player.combo = 0;
         }
@@ -337,7 +337,7 @@ export class Canvas {
                 }
             });
         });
-        this.game.soundManager.play_sounds(this.game.soundManager.drop_sound);
+        this.game.sound.play_sounds(this.game.sound.drop_sound);
     }
 
     ghostTetrimino(player) {
