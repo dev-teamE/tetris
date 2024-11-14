@@ -13,20 +13,12 @@ export class Sound {
     }
 
     async loadSounds() {
-        this.sounds.bgm = await this.load_sounds("bgm");
-        this.sounds.drop = await this.load_sounds("drop");
-        this.sounds.hold = await this.load_sounds("hold");
-        this.sounds.clear = await this.load_sounds("clear");
-        this.sounds.move = await this.load_sounds("move");
-        this.sounds.rotate = await this.load_sounds("rotate");
-
-
-        this.bgm_sound = this.sounds.bgm;
-        this.drop_sound = this.sounds.drop;
-        this.hold_sound = this.sounds.hold;
-        this.clear_sound = this.sounds.clear;
-        this.move_sound = this.sounds.move;
-        this.rotate_sound = this.sounds.rotate;
+        this.bgm_sound = await this.load_sounds("bgm");
+        this.drop_sound = await this.load_sounds("drop");
+        this.hold_sound = await this.load_sounds("hold");
+        this.clear_sound = await this.load_sounds("clear");
+        this.move_sound = await this.load_sounds("move");
+        this.rotate_sound = await this.load_sounds("rotate");
     }
 
     async load_sounds(key) {
