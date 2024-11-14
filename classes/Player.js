@@ -83,7 +83,7 @@ export class Player {
         if (this.isTouchingGround && temp != this.pos.x) {
             this.moveReset();
         }
-        this.game.soundManager.play_sounds(this.game.soundManager.move_sound);
+        this.game.sound.play_sounds(this.game.sound.move_sound);
     }
 
     playerDrop() {
@@ -145,7 +145,7 @@ export class Player {
 
     player_reset_after_hold() {
         if (!this.hold_used) {
-            this.game.soundManager.play_sounds(this.game.soundManager.hold_sound);
+            this.game.sound.play_sounds(this.game.sound.hold_sound);
             if (this.hold_tetro_type != null) {
                 this.hold_used = true;
                 let temp = this.current_tetro_type;
@@ -239,9 +239,9 @@ export class Player {
                 rotationSuccess = (this.matrix === rotatedTetro);
             }
     
-            if (rotationSuccess && this.game.soundManager && 
-                this.game.soundManager.rotate_sound) {
-                this.game.soundManager.play_sounds(this.game.soundManager.rotate_sound);
+            if (rotationSuccess && this.game.sound && 
+                this.game.sound.rotate_sound) {
+                this.game.sound.play_sounds(this.game.sound.rotate_sound);
             }
     
             if (this.game && this.game.canvas && 
