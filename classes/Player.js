@@ -32,8 +32,8 @@ export class Player {
     }
 
     playerReset() {
-        this.current_tetro_type = this.game.tetrominoes.getNextTetromino();
-        this.matrix = this.game.tetrominoes.createPiece(this.current_tetro_type);
+        this.current_tetro_type = this.game.tetro.getNextTetromino();
+        this.matrix = this.game.tetro.createPiece(this.current_tetro_type);
         this.rotation = 0;
         this.moveOrRotateCount = 1;
         this.isTouchingGround = false;
@@ -48,7 +48,7 @@ export class Player {
         
         this.currentLastYPos = this.lastYPos(this.matrix);
     
-        this.game.canvas.drawNextPieces(this.game.tetrominoes.nextPieces);
+        this.game.canvas.drawNextPieces(this.game.tetro.nextPieces);
     
         if (this.game.canvas.collide(this)) {
             this.game.gameOver();
@@ -152,14 +152,14 @@ export class Player {
                 this.current_tetro_type = this.hold_tetro_type;
                 this.hold_tetro_type = temp;
                 this.rotation = 0;
-                this.matrix = this.game.tetrominoes.createPiece(this.current_tetro_type);
+                this.matrix = this.game.tetro.createPiece(this.current_tetro_type);
                 this.moveOrRotateCount = 1;
                 this.isTouchingGround = false;
                 this.pos.y = 0;
                 this.pos.x = (this.game.canvas.arena[0].length / 2 | 0) - (this.matrix[0].length / 2 | 0)
                 this.game.canvas.ghostTetrimino(this);
                 this.game.canvas.draw_hold_field(this.hold_tetro_type);
-                this.game.canvas.drawNextPieces(this.game.tetrominoes.nextPieces);
+                this.game.canvas.drawNextPieces(this.game.tetro.nextPieces);
                 if (this.game.canvas.collide(this)) {
                     this.game.gameOver();
                     return false;
@@ -217,20 +217,20 @@ export class Player {
         }
     
         try {
-            const rotatedTetro = this.game.tetrominoes.rotate(this.matrix);
+            const rotatedTetro = this.game.tetro.rotate(this.matrix);
             let rotationSuccess = false;
     
             // 通常の回転を試みる
-            if (this.game.tetrominoes.collision_on_rotate(
+            if (this.game.tetro.collision_on_rotate(
                 this.pos.x,
                 this.pos.y,
                 rotatedTetro,
                 this.game.canvas.arena
             )) {
-                rotationSuccess = this.game.tetrominoes.afterRotate(this, rotatedTetro);
+                rotationSuccess = this.game.tetro.afterRotate(this, rotatedTetro);
             } else {
                 // SRSによる回転を試みる
-                this.game.tetrominoes.clockwisSrs(
+                this.game.tetro.clockwisSrs(
                     this.current_tetro_type,
                     this,
                     rotatedTetro,
